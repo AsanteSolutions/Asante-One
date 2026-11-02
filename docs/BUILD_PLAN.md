@@ -20,8 +20,8 @@ These come from checking the brief against the bench and the local site (`asante
 | Finding | Design decision |
 |---|---|
 | ERPNext **Holiday List** already generates South African holidays ("Add local holidays", country ZA, using the `holidays` library). HRMS uses it for leave. | The Holiday List is the single holiday source. Do not port the prototype's Easter and public holiday code. Admins add proclaimed days (for example 4 Nov 2026) as rows. The hub and leave calculations then always agree. |
-| Frappe's **Google Calendar** integration can pull a calendar into the `Event` DocType with `sync_as_public`. | Company calendars need no custom OAuth code. One admin Google account connects each company calendar once; the hub reads public `Event` rows. |
-| **Employee** already holds `date_of_birth`, `date_of_joining`, `image`, `department` and `branch`. HRMS already sends birthday reminders. | Birthdays and anniversaries come from Employee, filtered by a consent field, not from a Google birthdays calendar. This is a small change from the brief; Thithi to confirm. |
+| Frappe's **Google Calendar** integration can pull a calendar into the `Event` DocType with `sync_as_public`. | The company holiday calendar needs no custom OAuth code. Thithi owns it and connects it once; the hub reads public `Event` rows. |
+| **Employee** already holds `date_of_birth`, `date_of_joining`, `department` and `branch`; **User** holds `user_image`, which each person uploads on their own profile. HRMS already sends birthday reminders. | Birthdays and anniversaries come from Employee, not from a Google birthdays calendar. Birthdays are already celebrated company wide, so every active employee is shown and no consent field is needed. Photos come from the linked User's `user_image`, so people choose their own and no photo consent field is needed either; anyone without one gets initials. |
 | Frappe v16 has `add_to_apps_screen` and a **Default App** setting at system and user level (see `hrms/hooks.py`). | Landing on ASANTE ONE after login is configuration, not a custom redirect. |
 | Equipment on the local site: check out is mostly logged as **Material Issue** ("To Site"), returns as **Material Receipt** ("Return From Site"). The single "From Office To Site" entry has its warehouses reversed. No item is serialised. 51 items exist in ERPNext against 197 rows in the asset register sheet. | Stock balances cannot currently show what is out or who has it. The model must be agreed with Lindo before the Equipment page is built (section 6). |
 
@@ -108,7 +108,7 @@ add_to_apps_screen = [
 ]
 ```
 
-Then set **System Settings › Default App = asante_one**.
+Then set **System Settings › Default App = asante_one**. This happens at launch, after testing, not before.
 
 ---
 
@@ -118,7 +118,7 @@ All new DocTypes live in the "Asante One" module. None of these names clash with
 
 | DocType | Kind | Key fields |
 |---|---|---|
-| **One Settings** | Single | default Holiday List; company calendars (child: Google Calendar link, label, colour); incident template URL; purchase list URL; equipment process URL; Check Out and Check In Stock Entry Types; store and site warehouses; ClickUp URL; feature flags |
+| **One Settings** | Single | default Holiday List; company holiday calendar (Link Google Calendar); incident template URL; purchase list URL; equipment process URL; Check Out and Check In Stock Entry Types; store and site warehouses; ClickUp URL; feature flags |
 | **One HR Action** | child of Settings, or standalone | label, module, desk route, mobile route (`/hrms/...`), icon, roles, verified (Check), note. Routes as data, so a wrong route is fixed without a deploy |
 | **One Announcement** | normal | title, body (Text Editor), priority (Normal or Urgent), audience (All, Department, Branch, Role), publish_from, show_until, published |
 | **One Announcement View** | log | announcement, user, seen_on; unique on (announcement, user). Makes "pops up once per employee" true across devices |
@@ -126,15 +126,13 @@ All new DocTypes live in the "Asante One" module. None of these names clash with
 | **One Policy** | normal | title, box, owner, status (Draft, Under review, Approved, Archived, Missing, Legislation), drive_url, updated_on, next_review, summary, takeaways (child), related (child) |
 | **One Resource** | normal | title, url, category (SOPs, Templates, Brand, Admin), owner, description, restricted_roles (Table MultiSelect of Role), featured |
 | **One Tool** | normal | name, purpose, used by, url, guide_url, tracked measures |
-| **One Help Topic** | normal | group, question, role, person (Link Employee, optional) or free text, how to reach, sequence |
-| **One Department Profile** | normal | department (Link Department); tools (child); quick actions (child: label, icon, action type URL, HR Action or route); reminders (child: title, rule, description, kind) |
-| **One Company Date** | normal | title, type (shutdown, closure, company holiday, internal), from, to, branch, add_to_holiday_list (Check) |
+| **One Help Topic** | normal | group, question, role, person (Link Employee), how to reach (optional), sequence. Every topic names a person. Named so far: Thithi (Growth and People), Muhle (Managing Director), Lindokuhle Nyawo (Company Assets Custodian), Luthando (Technical Lead), Wandile (Finance Lead), Khotso (Client Success Lead) |
+| **One Department Profile** | normal | department (Link Department); tools (child); quick actions (child: label, icon, action type URL, HR Action or route); reminders (child: title, rule, description, kind). Client Success is part of Operations, so its tools and reminders sit in the Operations profile |
 | **One Pin** | normal, owner scoped | user, key. Replaces the prototype's browser storage pins |
 
 Custom fields (shipped as fixtures):
 
-- **Employee:** `celebrate_birthday` (Check), `photo_consent` (Check)
-- **Event:** `cover_image`, `photo_folder_url`, `one_category`
+- **Event:** `cover_image`, `photo_folder_url`, `one_category` (for example shutdown, closure, company holiday, social)
 - **Stock Entry:** `asset_champion` (Link Employee), `shoot_purpose`, alongside the existing `custom_submitted_by`
 
 ### Reminder rule engine (`rules.py`)
@@ -156,14 +154,17 @@ This covers EMP201 (the 7th), EMP501 (31 October and 31 May), month end close an
 
 ### Holidays
 
-- Generate the Holiday List for ZA for the current and next year, add proclaimed days as rows, and point One Settings at it.
+- Generate the Holiday List for ZA for the current and next year, add proclaimed days as rows, and point One Settings at it. Apile loads the 2026 proclaimed day (4 November) and the 2027 list.
 - Acceptance test 5 then becomes checking the list against gov.za.
-- Shutdown days: if `add_to_holiday_list` is ticked on a One Company Date, the days are added to the Holiday List and stop counting as leave. This is a policy decision (section 10).
+- Shutdown and closure days are not added here. Thithi puts them on the company holiday calendar (see below). Whether they count as leave stays an HR setting, outside the hub.
 
-### Company calendars
+### Company holiday calendar
 
-- An admin Google account creates one Google Calendar record per company calendar, with pull from Google and `sync_as_public` enabled.
-- The hub reads `Event` rows where `google_calendar` is in the configured list. Admins can also add Events directly in Desk.
+- One calendar appears in the hub: the company holiday calendar, owned by Thithi. Thithi connects it once in production, from the Google account that owns it, as a Google Calendar record, with pull from Google and `sync_as_public` enabled. Until then a test calendar is linked for development.
+- The hub reads `Event` rows from that calendar. Admins can also add Events directly in Desk.
+- Shutdown and closure days live on this calendar too, so there is no separate company dates DocType. Thithi puts "Shutdown" or "Closed" in the event title and the hub shows it as a day off. Admins can also set `one_category` on the Event in Desk.
+- Repeating events show their first occurrence only. Thithi is told this; expanding repeats is not in version 1.
+- Public holidays come from the Holiday List. If Thithi's calendar also contains them, the hub skips calendar events that match a Holiday List date so a holiday is not shown twice.
 
 ### Equipment (ERPNext)
 
@@ -198,8 +199,8 @@ Few, coarse calls, to stay under three seconds on 4G.
 
 | Method | Returns |
 |---|---|
-| `get_boot()` | Rendered into `one.html` server side, so no extra request. User and Employee (name, title, department, branch, photo), roles, nav, settings links, and the search index (actions, policies, resources, tools, help) already filtered by role |
-| `get_home()` | Unseen announcements, next six "coming up" items (holidays, company dates, public Events, consented birthdays), department profile with computed reminders, pins, recently updated policies |
+| `get_boot()` | Rendered into `one.html` server side, so no extra request. User and Employee (name, title, department, branch, photo from `User.user_image`), roles, nav, settings links, and the search index (actions, policies, resources, tools, help) already filtered by role |
+| `get_home()` | Unseen announcements, next six "coming up" items (Holiday List days, company holiday calendar Events including shutdown and closure, birthdays and anniversaries), department profile with computed reminders, pins, recently updated policies |
 | `get_policies()`, `get_life(month)`, `get_how_we_work()`, `get_equipment(tab)` | Page data |
 | `mark_announcement_seen(name)`, `toggle_pin(key)` | The only writes |
 
@@ -227,7 +228,7 @@ Rules:
 
 **Shell:** side rail on desktop; bottom tab bar under 860px (the prototype's breakpoints). The top bar holds search (`/` shortcut), theme toggle, notifications and the profile menu.
 
-**Shared components:** `Avatar`, `Tag`, `QuickActionTile`, `ListRow`, `Sheet` (frappe-ui Dialog), `CommandPalette`, `MonthGrid`, `DeptSection`, `PolicyBox`, `HandoffSheet` (the "this opens Frappe HR" sheet, kept only for routes still unverified).
+**Shared components:** `Avatar` (`User.user_image`, falling back to initials), `Tag`, `QuickActionTile`, `ListRow`, `Sheet` (frappe-ui Dialog), `CommandPalette`, `MonthGrid`, `DeptSection`, `PolicyBox`, `HandoffSheet` (the "this opens Frappe HR" sheet, kept only for routes still unverified).
 
 Take the CSS tokens and layout from the prototype. Its rendering logic is template strings and should be rewritten as components rather than ported.
 
@@ -237,14 +238,16 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 
 ### Week 0: before coding (mostly other people's input)
 
-- [ ] Verify every HR route as a plain Employee (Apile)
+- [x] Verify every HR route as a plain Employee (Apile)
 - [ ] Agree the equipment model and Stock Entry Types (Apile and Lindo)
 - [ ] Policy folders on Drive organised to match the boxes (Thithi)
 - [ ] Incident report template link (Thithi)
 - [ ] Tool guides and what we track per tool (Thithi)
-- [ ] Company calendar IDs (Thithi)
+- [ ] Link a test Google calendar for development (Apile). Thithi connects the real one in production
+- [x] Who to ask names: Lindokuhle Nyawo, Luthando, Wandile, Khotso (Apile). Office Champion, HR partner and Marketing still to name
+- [ ] 4 November 2026 and the 2027 public holidays in the Holiday List (Apile)
 - [ ] Department toolkits, quick actions and reminders (each Lead, via Thithi)
-- [ ] Year end shutdown and closure dates (Thithi)
+- [ ] Year end shutdown and closure dates on the company holiday calendar (Thithi)
 - [ ] Friday report decision (Thithi and Muhle, asked)
 
 ### Weeks 1 to 3
@@ -267,8 +270,6 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 |---|---|---|
 | Apile and Lindo | Equipment model: Check Out and Check In as Material Transfer, `asset_champion` field, Asset or serial numbers for personally issued kit | Equipment page (week 3) |
 | Thithi and Muhle | Whether the Friday report stays. Asked; awaiting an answer. If it stays, it is the one feature that stores operational records, and it needs its own estimate | Scope |
-| Thithi | Birthdays and anniversaries from Employee with consent, instead of a Google birthdays calendar | Home and Life (week 2) |
-| Thithi and Muhle | Whether shutdown days are added to the Holiday List (not counted as leave) or stay informational | One Company Date behaviour |
 | Apile | Frappe capability list: what we use today and what we do not (requested by Muhle, 21 Oct) | Nothing in this build |
 | Group | Policy folder setup: one central folder plus department copies, and how copies stay in sync | Policy content |
 
@@ -299,7 +300,7 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 3. Apply for leave, Request work from home and My leave balance each open the correct Frappe page in one tap, on desktop and phone.
 4. An announcement published by the admin pops up once for every employee on their next visit.
 5. Public holidays for the current and next year match gov.za, including Monday days in lieu and proclaimed days.
-6. Each policy box opens the matching Drive folder, and each policy opens its Drive original.
+6. Each policy box opens the matching Drive folder, and each policy opens its Drive original. A policy without a document yet shows no link; the admin adds it in Desk when it is available.
 7. Check out and Check in open ERPNext Stock Entry with the right type prefilled, in two taps from a phone.
 8. New equipment added in ERPNext appears in Available kit without any change in ASANTE ONE.
 9. An employee never sees Manage content, HR setup or restricted Drive folders, even by typing the address.
@@ -312,10 +313,11 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 
 1. `bench build --app asante_one` (the root `package.json` build script builds the SPA)
 2. `bench --site <site> migrate` (installs DocTypes and fixtures)
-3. System Settings › Default App = `asante_one`
-4. Holiday List: generate ZA holidays for the current and next year, add proclaimed days, select it in One Settings
-5. Google Calendar: connect each company calendar with `sync_as_public`, add them to One Settings
-6. Employee: confirm every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set
-7. Stock Entry Types: confirm Check Out and Check In exist with the agreed warehouses
-8. Seed content: load or enter policies, resources, tools, help topics and department profiles
-9. Smoke test as one admin and one employee on desktop and phone
+3. System Settings › Default App = `asante_one`, at launch, after UAT
+4. Roles: Asante One Admin for Thithi and Muhle (Administrator already sees everything through System Manager); Company Assets Custodian for Lindokuhle Nyawo
+5. Holiday List: generate ZA holidays for the current and next year, add proclaimed days, select it in One Settings
+6. Google Calendar: Thithi connects the company holiday calendar with `sync_as_public`; set it in One Settings
+7. Employee: confirm every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set
+8. Stock Entry Types: confirm Check Out and Check In exist with the agreed warehouses
+9. Seed content: load or enter policies, resources, tools, help topics and department profiles
+10. Smoke test as one admin and one employee on desktop and phone
