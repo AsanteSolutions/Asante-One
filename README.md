@@ -4,12 +4,14 @@ Asante Solutions Employee Hub
 
 ### Installation
 
+Asante One requires [Frappe HR](https://github.com/frappe/hrms) (which in turn requires ERPNext). Bench fetches and installs it for you, because the app lists it in `required_apps`.
+
 You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
 bench get-app $URL_OF_THIS_REPO --branch version-16
-bench install-app asante_one
+bench --site $SITE install-app asante_one
 ```
 
 ### Contributing
