@@ -5,17 +5,24 @@ from frappe.tests import IntegrationTestCase, UnitTestCase
 
 from asante_one.api import cache
 from asante_one.api.boot import build_content, can_see
-from asante_one.api.home import get_announcements, in_audience, mark_announcements_seen, next_occurrence
+from asante_one.api.home import anniversaries, get_announcements, in_audience, mark_announcements_seen
+from asante_one.api.life import get_event, get_life
 
 
 class UnitTestRules(UnitTestCase):
 	def test_leap_day_birthday_falls_on_28_february(self):
-		self.assertEqual(next_occurrence(date(2000, 2, 29), date(2027, 1, 10)), date(2027, 2, 28))
-		self.assertEqual(next_occurrence(date(2000, 2, 29), date(2028, 1, 10)), date(2028, 2, 29))
+		born = date(2000, 2, 29)
+		self.assertEqual(list(anniversaries(born, date(2027, 1, 1), date(2027, 12, 31))), [date(2027, 2, 28)])
+		self.assertEqual(list(anniversaries(born, date(2028, 1, 1), date(2028, 12, 31))), [date(2028, 2, 29)])
 
-	def test_birthday_already_past_moves_to_next_year(self):
-		self.assertEqual(next_occurrence(date(1990, 3, 1), date(2026, 10, 30)), date(2027, 3, 1))
-		self.assertEqual(next_occurrence(date(1990, 10, 30), date(2026, 10, 30)), date(2026, 10, 30))
+	def test_birthdays_across_new_year(self):
+		self.assertEqual(
+			list(anniversaries(date(1990, 3, 1), date(2026, 10, 30), date(2027, 3, 31))), [date(2027, 3, 1)]
+		)
+		self.assertEqual(
+			list(anniversaries(date(1990, 10, 30), date(2026, 10, 30), date(2027, 1, 28))),
+			[date(2026, 10, 30)],
+		)
 
 	def test_audience(self):
 		employee = frappe._dict(department="Operations", branch="Durban Branch")
@@ -88,3 +95,31 @@ class IntegrationTestAPI(IntegrationTestCase):
 		]
 		shown = {a["name"] for a in get_announcements(None, frappe.get_roles())}
 		self.assertFalse(shown.intersection(hidden))
+
+	def test_private_event_is_not_found(self):
+		private = frappe.get_doc(
+			{
+				"doctype": "Event",
+				"subject": "Test private appointment",
+				"starts_on": "2026-11-20 09:00:00",
+				"event_type": "Private",
+			}
+		).insert()
+		company = frappe.get_doc(
+			{
+				"doctype": "Event",
+				"subject": "Test team braai",
+				"starts_on": "2026-11-21 12:00:00",
+				"event_type": "Public",
+				"one_category": "Social",
+			}
+		).insert()
+
+		self.assertEqual(get_event(company.name)["title"], "Test team braai")
+		self.assertRaises(frappe.DoesNotExistError, get_event, private.name)
+		titles = {item["title"] for item in get_life("2026-11-01", "2026-11-30")}
+		self.assertIn("Test team braai", titles)
+		self.assertNotIn("Test private appointment", titles)
+
+	def test_life_refuses_a_very_long_range(self):
+		self.assertRaises(frappe.ValidationError, get_life, "2026-01-01", "2028-01-01")

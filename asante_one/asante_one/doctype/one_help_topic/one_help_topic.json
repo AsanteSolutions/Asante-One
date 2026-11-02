@@ -14,6 +14,9 @@
   "person",
   "person_name",
   "how_to_reach",
+  "section_request",
+  "request_label",
+  "request_url",
   "sequence"
  ],
  "fields": [
@@ -60,6 +63,25 @@
    "label": "How To Reach"
   },
   {
+   "description": "Fill these to list this topic on the Request desk in How we work.",
+   "fieldname": "section_request",
+   "fieldtype": "Section Break",
+   "label": "Request desk"
+  },
+  {
+   "description": "For example Equipment request",
+   "fieldname": "request_label",
+   "fieldtype": "Data",
+   "label": "Request name"
+  },
+  {
+   "description": "The form, log or folder the request is made in",
+   "fieldname": "request_url",
+   "fieldtype": "Data",
+   "label": "Where requests go",
+   "options": "URL"
+  },
+  {
    "fieldname": "sequence",
    "fieldtype": "Int",
    "label": "Sequence"
@@ -68,7 +90,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-30 14:28:52.754588",
+ "modified": "2026-11-02 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "Asante One",
  "name": "One Help Topic",

@@ -17,6 +17,19 @@
 		<div class="flex-1 nav:hidden" />
 
 		<button
+			class="hidden h-10 w-[min(340px,30vw)] items-center gap-2.5 rounded-xl border border-line-2 bg-surface px-3 text-left text-sm text-grey hover:border-grey nav:flex"
+			aria-label="Search"
+			@click="palette.open = true"
+		>
+			<Icon name="search" class="h-[18px] w-[18px]" />
+			<span class="flex-1 truncate">Search ASANTE ONE</span>
+			<kbd class="rounded-md border border-line px-1.5 font-body text-xs">/</kbd>
+		</button>
+		<button class="grid h-10 w-10 place-items-center rounded-xl text-ink-2 hover:bg-sunk nav:hidden" aria-label="Search" @click="palette.open = true">
+			<Icon name="search" class="h-[19px] w-[19px]" />
+		</button>
+
+		<button
 			class="grid h-10 w-10 place-items-center rounded-xl text-ink-2 hover:bg-sunk"
 			:aria-label="isDark ? 'Switch to light' : 'Switch to dark'"
 			@click="toggleTheme"
@@ -76,6 +89,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRoute } from "vue-router"
 import { boot, hrAction } from "@/boot"
 import { hrHref } from "@/utils/actions"
+import { palette } from "@/utils/palette"
 import { isDark, toggleTheme } from "@/utils/theme"
 import Avatar from "@/components/Avatar.vue"
 import BrandMark from "@/components/BrandMark.vue"

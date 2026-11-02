@@ -984,6 +984,16 @@ HELP_TOPICS = [
 	("Clients and delivery", "Brand files, letterheads, social media", "Marketing", None),
 ]
 
+# Topics listed on the Request desk: the request's name and where it is made
+REQUESTS = {
+	"Equipment register, check out and check in, equipment purchases": (
+		"Equipment request",
+		DRIVE["purchase_list"],
+	),
+	"AsantePower CRM, websites, logins, ASANTE ONE": ("CRM or website issue", DRIVE["tech_errors"]),
+	"Brand files, letterheads, social media": ("Brand asset", DRIVE["brand"]),
+}
+
 
 def tool(label, subtitle, url, icon, status="Link"):
 	return {"label": label, "subtitle": subtitle, "url": url, "icon": icon, "status": status}
@@ -1379,6 +1389,7 @@ def seed_help_topics():
 		if frappe.db.exists("One Help Topic", {"question": question}):
 			continue
 		employee = person and frappe.db.get_value("Employee", {"employee_name": person, "status": "Active"})
+		request_label, request_url = REQUESTS.get(question, (None, None))
 		frappe.get_doc(
 			{
 				"doctype": "One Help Topic",
@@ -1386,6 +1397,8 @@ def seed_help_topics():
 				"question": question,
 				"role": role,
 				"person": employee,
+				"request_label": request_label,
+				"request_url": request_url,
 				"sequence": seq,
 			}
 		).insert(ignore_permissions=True)

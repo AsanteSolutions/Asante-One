@@ -26,7 +26,7 @@
 
 	<div v-else class="max-w-[560px] rounded-[14px] border-[1.5px] border-dashed border-line-2 bg-canvas p-5 text-sm text-ink-2">
 		<b class="mb-1 block text-ink">This page is being built</b>
-		It arrives in the next build. Home already works with real content.
+		It arrives in the next build.
 	</div>
 </template>
 

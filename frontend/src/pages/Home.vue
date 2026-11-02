@@ -46,6 +46,14 @@
 			<div class="grid grid-cols-2 gap-2">
 				<QuickAction v-for="action in boot.quick_actions" :key="action.label" :action="action" />
 			</div>
+			<template v-if="pinned.length">
+				<h3 class="mb-2 mt-5 text-sm text-grey">Pinned</h3>
+				<div class="flex flex-wrap gap-1.5">
+					<a v-for="t in pinned" :key="t.tool_name" :href="t.url" target="_blank" rel="noopener" class="chip inline-flex items-center gap-1.5 no-underline">
+						<Icon name="pin" class="h-3.5 w-3.5 text-accent" /> {{ t.tool_name }}
+					</a>
+				</div>
+			</template>
 		</section>
 
 		<section class="panel" aria-labelledby="coming-up">
@@ -57,33 +65,16 @@
 				<RouterLink to="/life" class="link">Life at Asante Solutions</RouterLink>
 			</div>
 
-			<div v-if="home.loading && !home.data" class="flex flex-col gap-3" aria-busy="true">
-				<div v-for="n in 4" :key="n" class="h-10 animate-pulse rounded-lg bg-sunk" />
-			</div>
+			<Skeleton v-if="home.loading && !home.data" />
 			<p v-else-if="home.error" class="hint">Coming up could not load. Refresh the page to try again.</p>
 			<p v-else-if="!comingUp.length" class="hint">Nothing in the next three months.</p>
 			<div v-else class="flex flex-col">
-				<RouterLink
-					v-for="item in comingUp"
-					:key="`${item.date}-${item.title}`"
-					:to="item.to || '/life'"
-					class="group flex items-center gap-3 border-t border-line py-[9px] text-left no-underline first:border-t-0"
-				>
-					<span class="w-[42px] flex-none text-center text-[11.5px] font-bold leading-[1.15] text-grey">
-						<b class="block font-display text-[22px] font-semibold leading-none tracking-[-.02em] text-ink">{{ parts(item.date).day }}</b>
-						{{ parts(item.date).month }}
-					</span>
-					<span class="min-w-0 flex-1">
-						<span class="block text-sm font-semibold group-hover:text-accent">{{ item.title }}</span>
-						<span v-if="item.subtitle" class="hint block">{{ item.subtitle }}</span>
-					</span>
-					<span :class="['whitespace-nowrap rounded-md px-[7px] text-[11.5px] font-semibold leading-[1.6]', KINDS[item.kind]]">
-						{{ item.label }}
-					</span>
-				</RouterLink>
+				<DateRow v-for="item in comingUp" :key="`${item.date}-${item.title}`" :item="{ ...item, to: item.to || '/life' }" />
 			</div>
 		</section>
 	</div>
+
+	<DeptSection v-if="home.data?.department" :department="home.data.department" />
 
 	<section v-if="recentPolicies.length" class="mt-[34px]" aria-labelledby="recently-updated">
 		<h2 id="recently-updated" class="mb-3.5 text-[19px]">Recently updated</h2>
@@ -112,20 +103,15 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { call, createResource } from "frappe-ui"
 import { boot } from "@/boot"
-import { clock, formatDate, greeting, longDate, parts, shortDay, todayISO } from "@/utils/dates"
+import { KINDS, loadLibrary } from "@/data"
+import { clock, formatDate, greeting, longDate, shortDay, todayISO } from "@/utils/dates"
 import Announcements from "@/components/Announcements.vue"
 import Avatar from "@/components/Avatar.vue"
+import DateRow from "@/components/DateRow.vue"
+import DeptSection from "@/components/DeptSection.vue"
 import Icon from "@/components/Icon.vue"
 import QuickAction from "@/components/QuickAction.vue"
-
-// Tag colours for each kind of date, from the prototype
-const KINDS = {
-	public_holiday: "bg-ph-bg text-ph",
-	company: "bg-ok-bg text-ok",
-	closure: "bg-plum text-white",
-	birthday: "bg-lav text-accent",
-	anniversary: "bg-lav text-accent",
-}
+import Skeleton from "@/components/Skeleton.vue"
 
 const home = createResource({ url: "asante_one.api.home.get_home", auto: true })
 
@@ -133,6 +119,12 @@ const announcements = computed(() => home.data?.announcements || [])
 const banner = computed(() => announcements.value[0])
 const comingUp = computed(() => home.data?.coming_up || [])
 const recentPolicies = computed(() => home.data?.recent_policies || [])
+
+// Tools the person pinned in How we work. The library loads only when something is pinned.
+const library = boot.pins.length ? loadLibrary() : null
+const pinned = computed(() =>
+	(library?.data?.tools || []).filter((t) => t.url && boot.pins.includes(`tool:${t.tool_name}`)),
+)
 
 const roleLine = computed(() => {
 	const e = boot.employee

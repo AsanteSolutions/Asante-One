@@ -40,3 +40,55 @@ export function formatDate(iso) {
 	const p = parts(iso)
 	return `${p.day} ${p.month} ${iso.slice(0, 4)}`
 }
+
+const LONG_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+const fromISO = (iso) => {
+	const [y, m, d] = iso.split("-").map(Number)
+	return new Date(Date.UTC(y, m - 1, d))
+}
+const toISO = (date) => date.toISOString().slice(0, 10)
+
+export function addDays(iso, days) {
+	const date = fromISO(iso)
+	date.setUTCDate(date.getUTCDate() + days)
+	return toISO(date)
+}
+
+/** "November 2026" for a YYYY-MM month */
+export function monthTitle(month) {
+	const [y, m] = month.split("-").map(Number)
+	return `${LONG_MONTHS[m - 1]} ${y}`
+}
+
+export function shiftMonth(month, by) {
+	const [y, m] = month.split("-").map(Number)
+	return toISO(new Date(Date.UTC(y, m - 1 + by, 1))).slice(0, 7)
+}
+
+/** The weeks shown for a month, Monday first, as rows of YYYY-MM-DD including the days around it. */
+export function monthWeeks(month) {
+	const first = fromISO(`${month}-01`)
+	const start = addDays(`${month}-01`, -((first.getUTCDay() + 6) % 7))
+	const weeks = []
+	let day = start
+	do {
+		const week = []
+		for (let i = 0; i < 7; i++) {
+			week.push(day)
+			day = addDays(day, 1)
+		}
+		weeks.push(week)
+	} while (day.slice(0, 7) === month)
+	return weeks
+}
+
+/** 9:00, or nothing for an all day event */
+export function timeOf(datetime) {
+	return datetime ? datetime.slice(11, 16) : ""
+}
+
+/** Whole days from one YYYY-MM-DD to another */
+export function daysBetween(from, to) {
+	return Math.round((fromISO(to) - fromISO(from)) / 86_400_000)
+}

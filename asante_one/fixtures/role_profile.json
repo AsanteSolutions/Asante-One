@@ -1,0 +1,26 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2026-11-02 10:55:23.318106",
+  "name": "Asante One Admin",
+  "role_profile": "Asante One Admin",
+  "roles": [
+   {
+    "role": "Asante One Admin"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2026-11-02 10:55:23.418550",
+  "name": "Company Assets Custodian",
+  "role_profile": "Company Assets Custodian",
+  "roles": [
+   {
+    "role": "Company Assets Custodian"
+   }
+  ]
+ }
+]

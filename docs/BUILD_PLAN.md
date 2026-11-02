@@ -126,7 +126,7 @@ All new DocTypes live in the "Asante One" module. None of these names clash with
 | **One Policy** | normal | title, box, owner, status (Draft, Under review, Approved, Archived, Missing, Legislation), drive_url, updated_on, next_review, summary, takeaways (child), related (child) |
 | **One Resource** | normal | title, url, category (SOPs, Templates, Brand, Admin), owner, description, restricted_roles (Table MultiSelect of Role), featured |
 | **One Tool** | normal | name, purpose, used by, url, guide_url, tracked measures |
-| **One Help Topic** | normal | group, question, role, person (Link Employee), how to reach (optional), sequence. Every topic names a person. Named so far: Thithi (Growth and People), Muhle (Managing Director), Lindokuhle Nyawo (Company Assets Custodian), Luthando (Technical Lead), Wandile (Finance Lead), Khotso (Client Success Lead) |
+| **One Help Topic** | normal | group, question, role, person (Link Employee), how to reach (optional), sequence. Every topic names a person. Named so far: Thithi (Growth and People), Muhle (Managing Director), Lindokuhle Nyawo (Company Assets Custodian), Luthando (Technical Lead), Wandile (Finance Lead), Khotso (Client Success Lead). A topic with a request name and "where requests go" link is also listed on the Request desk |
 | **One Department Profile** | normal | department (Link Department); tools (child); quick actions (child: label, icon, action type URL, HR Action or route); reminders (child: title, rule, description, kind). Client Success is part of Operations, so its tools and reminders sit in the Operations profile |
 | **One Pin** | normal, owner scoped | user, key. Replaces the prototype's browser storage pins |
 
@@ -199,10 +199,13 @@ Few, coarse calls, to stay under three seconds on 4G.
 
 | Method | Returns |
 |---|---|
-| `get_boot()` | Rendered into `one.html` server side, so no extra request. User and Employee (name, title, department, branch, photo from `User.user_image`), roles, nav, settings links, and the search index (actions, policies, resources, tools, help) already filtered by role |
-| `get_home()` | Unseen announcements, next six "coming up" items (Holiday List days, company holiday calendar Events including shutdown and closure, birthdays and anniversaries), department profile with computed reminders, pins, recently updated policies |
-| `get_policies()`, `get_life(month)`, `get_how_we_work()`, `get_equipment(tab)` | Page data |
-| `mark_announcement_seen(name)`, `toggle_pin(key)` | The only writes |
+| `get_boot()` | Rendered into `one.html` server side, so no extra request. User and Employee (name, title, department, branch, photo from `User.user_image`), roles, settings links, HR actions, quick actions, pins, and the search index (actions, policies, resources, tools, help, the person's department toolkit) already filtered by role |
+| `get_home()` | Announcements with a seen flag, next six "coming up" items (Holiday List days, company holiday calendar Events including shutdown and closure, birthdays and anniversaries), the department section (toolkit and the next date of each reminder), recently updated policies |
+| `get_library()` | Policy boxes, policies, Drive resources, tools and who to ask, for People and HR, Policies and How we work. Cached by role set |
+| `get_policy(name)` | One policy with its takeaways and related policies |
+| `get_life(start, end)`, `get_memories()`, `get_event(name)` | Dates for a range of up to 400 days, past company events, and one company event. Any other Event is not found |
+| `get_equipment(tab)` | Week 3 |
+| `mark_announcements_seen(names)`, `toggle_pin(key)` | The only writes |
 
 Rules:
 
@@ -314,7 +317,7 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 1. `bench build --app asante_one` (the root `package.json` build script builds the SPA)
 2. `bench --site <site> migrate` (installs DocTypes and fixtures)
 3. System Settings › Default App = `asante_one`, at launch, after UAT
-4. Roles: Asante One Admin for Thithi and Muhle (Administrator already sees everything through System Manager); Company Assets Custodian for Lindokuhle Nyawo
+4. Roles: Asante One Admin for Thithi and Muhle (Administrator already sees everything through System Manager); Company Assets Custodian for Lindokuhle Nyawo. A user with a Role Profile only keeps roles that come from a profile, so add the "Asante One Admin" or "Company Assets Custodian" Role Profile (shipped as fixtures) to their role profiles; give the role directly only to users with no profile
 5. Holiday List: generate ZA holidays for the current and next year, add proclaimed days, select it in One Settings
 6. Google Calendar: Thithi connects the company holiday calendar with `sync_as_public`; set it in One Settings
 7. Employee: confirm every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set

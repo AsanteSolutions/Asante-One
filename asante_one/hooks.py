@@ -176,9 +176,12 @@ doc_events = {
 	doctype: {"on_update": "asante_one.api.cache.clear", "on_trash": "asante_one.api.cache.clear"}
 	for doctype in _content_doctypes
 }
+doc_events["User"] = {"on_update": "asante_one.api.cache.clear_if_photo_changed"}
 
 fixtures = [
 	{"dt": "Role", "filters": [["name", "in", ["Asante One Admin", "Company Assets Custodian"]]]},
+	# Users with role profiles get roles only through profiles, so each role has one of its own
+	{"dt": "Role Profile", "filters": [["name", "in", ["Asante One Admin", "Company Assets Custodian"]]]},
 	{"dt": "Custom Field", "filters": [["module", "=", "Asante One"]]},
 ]
 

@@ -63,6 +63,8 @@
 			<span>{{ tab.label }}</span>
 		</RouterLink>
 	</nav>
+
+	<CommandPalette />
 </template>
 
 <script setup>
@@ -70,6 +72,7 @@ import { useRoute } from "vue-router"
 import { boot } from "@/boot"
 import { MANAGE_CONTENT, NAV, TABS, isActive } from "@/nav"
 import BrandMark from "@/components/BrandMark.vue"
+import CommandPalette from "@/components/CommandPalette.vue"
 import Icon from "@/components/Icon.vue"
 import TopBar from "@/components/TopBar.vue"
 

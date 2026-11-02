@@ -1,4 +1,4 @@
-"""Home in one call: announcements, coming up, pins and recently updated policies."""
+"""Home in one call: announcements, coming up, the department section and recently updated policies."""
 
 import json
 from datetime import date
@@ -8,7 +8,8 @@ from frappe.query_builder.functions import Coalesce
 from frappe.utils import add_days, get_datetime, getdate, now_datetime
 from frappe.utils.data import strip_html
 
-from asante_one.api.boot import get_content, get_employee
+from asante_one.api import rules
+from asante_one.api.boot import get_content, get_department_profile, get_employee
 
 COMING_UP_DAYS = 90
 COMING_UP_COUNT = 6
@@ -18,10 +19,12 @@ COMING_UP_COUNT = 6
 def get_home():
 	roles = frappe.get_roles()
 	settings = frappe.get_cached_doc("One Settings")
+	employee = get_employee()
+	today = getdate()
 	return {
-		"announcements": get_announcements(get_employee(), roles),
-		"coming_up": get_coming_up(settings, getdate())[:COMING_UP_COUNT],
-		"pins": frappe.get_all("One Pin", filters={"user": frappe.session.user}, pluck="pin_key"),
+		"announcements": get_announcements(employee, roles),
+		"coming_up": get_dates(settings, today, add_days(today, COMING_UP_DAYS))[:COMING_UP_COUNT],
+		"department": get_department(employee, settings, today),
 		"recent_policies": get_content(roles)["recent_policies"],
 	}
 
@@ -117,23 +120,42 @@ def in_audience(announcement, employee, roles):
 	return True
 
 
-# Coming up
+# The department section
 
 
-def get_coming_up(settings, today):
-	end = add_days(today, COMING_UP_DAYS)
-	holidays = get_holidays(settings.holiday_list, today, end)
+def get_department(employee, settings, today):
+	"""Toolkit and upcoming reminders for everyone in the person's department."""
+	profile = get_department_profile(employee)
+	if not profile:
+		return None
+	return {
+		"name": profile.display_name or employee.department_name,
+		"tools": [
+			{"label": t.label, "subtitle": t.subtitle, "url": t.url, "icon": t.icon, "status": t.status}
+			for t in profile.tools
+		],
+		"reminders": rules.upcoming(profile.reminders, today, settings.holiday_list),
+	}
+
+
+# Dates: holidays, company calendar events, birthdays and anniversaries
+
+
+def get_dates(settings, start, end):
+	"""Every date the hub shows between start and end, soonest first. Used by Home and Life."""
+	holidays = get_holidays(settings.holiday_list, start, end)
 	items = holidays + get_company_events(
-		settings.company_calendar, today, end, {h["date"] for h in holidays}
+		settings.company_calendar, start, end, {h["date"] for h in holidays}
 	)
 	if settings.show_birthdays or settings.show_work_anniversaries:
-		items += get_celebrations(settings, today, end)
+		items += get_celebrations(settings, start, end)
 	return sorted(items, key=lambda item: item["date"])
 
 
-def coming_up_item(day, title, subtitle, kind, label, to=None, person=None):
+def coming_up_item(day, title, subtitle, kind, label, to=None, person=None, until=None):
 	return {
 		"date": day,
+		"until": until,
 		"title": title,
 		"subtitle": subtitle,
 		"kind": kind,
@@ -189,18 +211,27 @@ def event_category(event):
 	return "Company"
 
 
-def get_company_events(company_calendar, start, end, holiday_dates):
-	"""Events from the company holiday calendar, plus Desk events given an ASANTE ONE category."""
+def company_events(company_calendar, *fields):
+	"""Events from the company holiday calendar, plus Desk events given an ASANTE ONE category.
+
+	Nobody's personal calendar is ever read: an Event must match one of these to be shown.
+	"""
 	Event = frappe.qb.DocType("Event")
 	source = Event.one_category.isnotnull() & (Event.one_category != "")
 	if company_calendar:
 		source = source | (Event.google_calendar == company_calendar)
-
-	events = (
+	return (
 		frappe.qb.from_(Event)
-		.select(Event.name, Event.subject, Event.starts_on, Event.ends_on, Event.one_category)
+		.select(Event.name, Event.subject, Event.starts_on, Event.ends_on, Event.one_category, *fields)
 		.where(source)
 		.where(Event.status != "Cancelled")
+	)
+
+
+def get_company_events(company_calendar, start, end, holiday_dates):
+	Event = frappe.qb.DocType("Event")
+	events = (
+		company_events(company_calendar)
 		.where(Event.starts_on <= get_datetime(f"{end} 23:59:59"))
 		.where(Coalesce(Event.ends_on, Event.starts_on) >= get_datetime(f"{start} 00:00:00"))
 		.orderby(Event.starts_on)
@@ -219,23 +250,32 @@ def get_company_events(company_calendar, start, end, holiday_dates):
 		subtitle = f"Until {last_day.strftime('%-d %b')}" if last_day > first_day else None
 		items.append(
 			coming_up_item(
-				max(first_day, start), event.subject, subtitle, kind, label, to=f"/life/{event.name}"
+				max(first_day, start),
+				event.subject,
+				subtitle,
+				kind,
+				label,
+				to=f"/life/{event.name}",
+				until=last_day if last_day > first_day else None,
 			)
 		)
 	return items
 
 
-def next_occurrence(day, today):
-	"""The next anniversary of `day` on or after today. 29 February falls on 28 February otherwise."""
+def in_year(day, year):
+	"""The anniversary of `day` in a year. 29 February falls on 28 February outside leap years."""
+	try:
+		return day.replace(year=year)
+	except ValueError:
+		return date(year, 2, 28)
 
-	def in_year(year):
-		try:
-			return day.replace(year=year)
-		except ValueError:
-			return date(year, 2, 28)
 
-	occurrence = in_year(today.year)
-	return occurrence if occurrence >= today else in_year(today.year + 1)
+def anniversaries(day, start, end):
+	"""Each anniversary of `day` between start and end."""
+	for year in range(start.year, end.year + 1):
+		occurrence = in_year(day, year)
+		if start <= occurrence <= end:
+			yield occurrence
 
 
 def get_celebrations(settings, start, end):
@@ -257,8 +297,7 @@ def get_celebrations(settings, start, end):
 	for employee in employees:
 		person = {"name": employee.employee_name, "image": images.get(employee.user_id)}
 		if settings.show_birthdays and employee.date_of_birth:
-			day = next_occurrence(getdate(employee.date_of_birth), start)
-			if day <= end:
+			for day in anniversaries(getdate(employee.date_of_birth), start, end):
 				items.append(
 					coming_up_item(
 						day, employee.employee_name, "Birthday", "birthday", "Birthday", person=person
@@ -266,9 +305,10 @@ def get_celebrations(settings, start, end):
 				)
 		if settings.show_work_anniversaries and employee.date_of_joining:
 			joined = getdate(employee.date_of_joining)
-			day = next_occurrence(joined, start)
-			years = day.year - joined.year
-			if years >= 1 and day <= end:
+			for day in anniversaries(joined, start, end):
+				years = day.year - joined.year
+				if years < 1:
+					continue
 				items.append(
 					coming_up_item(
 						day,

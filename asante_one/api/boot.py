@@ -28,7 +28,8 @@ def get_boot():
 		"links": get_links(),
 		"hr_actions": content["hr_actions"],
 		"quick_actions": get_quick_actions(employee, content["hr_actions"]),
-		"search": content["search"],
+		"search": content["search"] + get_department_search(employee),
+		"pins": frappe.get_all("One Pin", filters={"user": frappe.session.user}, pluck="pin_key"),
 	}
 
 
@@ -89,6 +90,19 @@ def get_department_profile(employee):
 	if not frappe.db.exists("One Department Profile", employee.department):
 		return None
 	return frappe.get_cached_doc("One Department Profile", employee.department)
+
+
+def get_department_search(employee):
+	"""The person's department toolkit, so search finds their team's tools too."""
+	profile = get_department_profile(employee)
+	if not profile:
+		return []
+	group = profile.display_name or employee.department_name
+	return [
+		{"group": group, "title": t.label, "subtitle": t.subtitle, "kind": "url", "url": t.url}
+		for t in profile.tools
+		if t.url
+	]
 
 
 def get_quick_actions(employee, hr_actions):
@@ -171,17 +185,32 @@ def build_content(roles):
 		if can_see(resource_roles.get(row.name), roles)
 	]
 
+	boxes = frappe.get_all(
+		"One Policy Box",
+		fields=["name", "title", "icon", "drive_folder_url", "drive_folder_name"],
+		order_by="sequence asc, title asc",
+	)
 	policies = frappe.get_all(
 		"One Policy",
-		fields=["name", "title", "box", "status", "policy_owner", "drive_url", "updated_on", "summary"],
+		fields=[
+			"name",
+			"title",
+			"box",
+			"status",
+			"policy_owner",
+			"drive_url",
+			"updated_on",
+			"next_review",
+			"summary",
+		],
 		order_by="title asc",
 	)
 	tools = frappe.get_all(
-		"One Tool", fields=["tool_name", "purpose", "used_by", "url"], order_by="sequence asc"
+		"One Tool",
+		fields=["tool_name", "purpose", "used_by", "url", "guide_url", "tracked_measures"],
+		order_by="sequence asc",
 	)
-	help_topics = frappe.get_all(
-		"One Help Topic", fields=["help_group", "question", "role", "person_name"], order_by="sequence asc"
-	)
+	help_topics = get_help_topics()
 
 	recent_policies = sorted(
 		(p for p in policies if p.updated_on and p.status not in ("Missing", "Archived")),
@@ -195,8 +224,54 @@ def build_content(roles):
 			{"name": p.name, "title": p.title, "status": p.status, "updated_on": p.updated_on}
 			for p in recent_policies
 		],
+		"library": {
+			"boxes": boxes,
+			"policies": policies,
+			"resources": resources,
+			"tools": tools,
+			"help": help_topics,
+		},
 		"search": build_search(hr_actions, policies, resources, tools, help_topics),
 	}
+
+
+def get_help_topics():
+	"""Who to ask, with each named person's photo from their User profile."""
+	topics = frappe.get_all(
+		"One Help Topic",
+		fields=[
+			"name",
+			"help_group",
+			"question",
+			"role",
+			"person",
+			"person_name",
+			"how_to_reach",
+			"request_label",
+			"request_url",
+		],
+		order_by="sequence asc",
+	)
+	people = [t.person for t in topics if t.person]
+	users = dict(
+		frappe.get_all("Employee", filters={"name": ("in", people)}, fields=["name", "user_id"], as_list=True)
+		if people
+		else []
+	)
+	images = dict(
+		frappe.get_all(
+			"User",
+			filters={"name": ("in", [u for u in users.values() if u])},
+			fields=["name", "user_image"],
+			as_list=True,
+		)
+		if users
+		else []
+	)
+	for topic in topics:
+		topic.person_image = images.get(users.get(topic.person))
+		del topic["person"]
+	return topics
 
 
 def build_search(hr_actions, policies, resources, tools, help_topics):
