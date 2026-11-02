@@ -53,3 +53,7 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+
+# Built by `bench build` from frontend/
+asante_one/public/frontend
+asante_one/www/one.html

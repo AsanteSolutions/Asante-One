@@ -1,0 +1,94 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "field:department",
+ "creation": "2026-10-30 14:28:52.838024",
+ "description": "What everyone in a department sees on Home: their toolkit, two extra quick actions and team reminders.",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "department",
+  "display_name",
+  "quick_actions",
+  "tools",
+  "reminders"
+ ],
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Shown on Home, for example Media Production. Defaults to the department name.",
+   "fieldname": "display_name",
+   "fieldtype": "Data",
+   "label": "Display Name"
+  },
+  {
+   "description": "Shown after the company wide quick actions. Two is the design.",
+   "fieldname": "quick_actions",
+   "fieldtype": "Table",
+   "label": "Quick Actions",
+   "options": "One Quick Action"
+  },
+  {
+   "fieldname": "tools",
+   "fieldtype": "Table",
+   "label": "Toolkit",
+   "options": "One Department Tool"
+  },
+  {
+   "fieldname": "reminders",
+   "fieldtype": "Table",
+   "label": "Reminders",
+   "options": "One Department Reminder"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-30 14:28:52.838024",
+ "modified_by": "Administrator",
+ "module": "Asante One",
+ "name": "One Department Profile",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Asante One Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -11,15 +11,17 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "asante_one",
-# 		"logo": "/assets/asante_one/logo.png",
-# 		"title": "Asante One",
-# 		"route": "/asante_one",
-# 		"has_permission": "asante_one.api.permission.has_app_permission",
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "asante_one",
+		"logo": "/assets/asante_one/images/logo.svg",
+		"title": "ASANTE ONE",
+		"route": "/one",
+	}
+]
+
+# The SPA owns every path under /one
+website_route_rules = [{"from_route": "/one/<path:app_path>", "to_route": "one"}]
 
 # The dock, the rail down the left of the desk, is a document rather than a hook. Author it in
 # Manage Dock on a developer-mode site and press Export to App, and it is written to
@@ -96,7 +98,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "asante_one.install.before_install"
-# after_install = "asante_one.install.after_install"
+after_install = "asante_one.setup.seed.run"
 
 # Uninstallation
 # ------------
@@ -159,13 +161,26 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+# Admin edits in Desk clear the cached content so they show in ASANTE ONE straight away
+_content_doctypes = (
+	"One Settings",
+	"One HR Action",
+	"One Policy Box",
+	"One Policy",
+	"One Resource",
+	"One Tool",
+	"One Help Topic",
+	"One Department Profile",
+)
+doc_events = {
+	doctype: {"on_update": "asante_one.api.cache.clear", "on_trash": "asante_one.api.cache.clear"}
+	for doctype in _content_doctypes
+}
+
+fixtures = [
+	{"dt": "Role", "filters": [["name", "in", ["Asante One Admin", "Company Assets Custodian"]]]},
+	{"dt": "Custom Field", "filters": [["module", "=", "Asante One"]]},
+]
 
 # Scheduled Tasks
 # ---------------
@@ -276,4 +291,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

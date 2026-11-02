@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "creation": "2026-10-30 14:28:51.889149",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "description",
+  "kind",
+  "rule",
+  "weekday",
+  "day",
+  "month"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "default": "Company rhythm",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Company rhythm\nSARS rule\nSuggested\nConfirm"
+  },
+  {
+   "description": "Monthly and yearly dates that fall on a weekend or holiday move back to the previous business day",
+   "fieldname": "rule",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Rule",
+   "options": "Weekly\nMonthly on day\nLast business day of month\nYearly on date",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.rule==\"Weekly\"",
+   "fieldname": "weekday",
+   "fieldtype": "Select",
+   "label": "Weekday",
+   "mandatory_depends_on": "eval:doc.rule==\"Weekly\"",
+   "options": "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday"
+  },
+  {
+   "depends_on": "eval:[\"Monthly on day\",\"Yearly on date\"].includes(doc.rule)",
+   "fieldname": "day",
+   "fieldtype": "Int",
+   "label": "Day",
+   "mandatory_depends_on": "eval:[\"Monthly on day\",\"Yearly on date\"].includes(doc.rule)"
+  },
+  {
+   "depends_on": "eval:doc.rule==\"Yearly on date\"",
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "label": "Month",
+   "mandatory_depends_on": "eval:doc.rule==\"Yearly on date\"",
+   "options": "January\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-30 14:28:51.889149",
+ "modified_by": "Administrator",
+ "module": "Asante One",
+ "name": "One Department Reminder",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

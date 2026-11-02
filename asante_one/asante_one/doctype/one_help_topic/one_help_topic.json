@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-10-30 14:28:52.754588",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "help_group",
+  "question",
+  "role",
+  "person",
+  "person_name",
+  "how_to_reach",
+  "sequence"
+ ],
+ "fields": [
+  {
+   "fieldname": "help_group",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Group",
+   "options": "People and HR\nApprovals and direction\nEquipment and the office\nSystems and tech\nMoney\nClients and delivery",
+   "reqd": 1
+  },
+  {
+   "fieldname": "question",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Ask about",
+   "reqd": 1
+  },
+  {
+   "description": "Job role, for example Growth and People Lead",
+   "fieldname": "role",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Role"
+  },
+  {
+   "fieldname": "person",
+   "fieldtype": "Link",
+   "label": "Person",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "person.employee_name",
+   "fieldname": "person_name",
+   "fieldtype": "Data",
+   "label": "Person name",
+   "read_only": 1
+  },
+  {
+   "description": "Optional",
+   "fieldname": "how_to_reach",
+   "fieldtype": "Data",
+   "label": "How To Reach"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-30 14:28:52.754588",
+ "modified_by": "Administrator",
+ "module": "Asante One",
+ "name": "One Help Topic",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Asante One Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "sequence",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "question",
+ "track_changes": 1
+}

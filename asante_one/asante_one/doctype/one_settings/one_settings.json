@@ -1,0 +1,193 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "creation": "2026-10-30 14:28:53.001866",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_calendar",
+  "holiday_list",
+  "company_calendar",
+  "column_break_people",
+  "show_birthdays",
+  "show_work_anniversaries",
+  "section_quick",
+  "quick_actions",
+  "section_links",
+  "clickup_url",
+  "operations_drive_url",
+  "incident_template_url",
+  "column_break_links",
+  "purchase_list_url",
+  "equipment_process_url",
+  "section_equipment",
+  "check_out_type",
+  "check_in_type",
+  "column_break_equipment",
+  "office_warehouse",
+  "site_warehouse"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_calendar",
+   "fieldtype": "Section Break",
+   "label": "Holidays and calendar"
+  },
+  {
+   "description": "ZA holidays for this year and next, with proclaimed days added as rows",
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "Holiday List"
+  },
+  {
+   "description": "The company holiday calendar. Its events, including shutdown and closure days, show in Coming up.",
+   "fieldname": "company_calendar",
+   "fieldtype": "Link",
+   "label": "Company Calendar",
+   "options": "Google Calendar"
+  },
+  {
+   "fieldname": "column_break_people",
+   "fieldtype": "Column Break",
+   "label": "Column Break People"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_birthdays",
+   "fieldtype": "Check",
+   "label": "Show Birthdays"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_work_anniversaries",
+   "fieldtype": "Check",
+   "label": "Show Work Anniversaries"
+  },
+  {
+   "fieldname": "section_quick",
+   "fieldtype": "Section Break",
+   "label": "Quick actions for everyone"
+  },
+  {
+   "description": "Shown to everyone on Home. Department profiles add two more.",
+   "fieldname": "quick_actions",
+   "fieldtype": "Table",
+   "label": "Quick Actions",
+   "options": "One Quick Action"
+  },
+  {
+   "fieldname": "section_links",
+   "fieldtype": "Section Break",
+   "label": "Links"
+  },
+  {
+   "fieldname": "clickup_url",
+   "fieldtype": "Data",
+   "label": "ClickUp URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "operations_drive_url",
+   "fieldtype": "Data",
+   "label": "Operations Drive URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "incident_template_url",
+   "fieldtype": "Data",
+   "label": "Incident report template URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "column_break_links",
+   "fieldtype": "Column Break",
+   "label": "Column Break Links"
+  },
+  {
+   "fieldname": "purchase_list_url",
+   "fieldtype": "Data",
+   "label": "Equipment purchase list URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "equipment_process_url",
+   "fieldtype": "Data",
+   "label": "Equipment process URL",
+   "options": "URL"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_equipment",
+   "fieldtype": "Section Break",
+   "label": "Equipment (ERPNext)"
+  },
+  {
+   "fieldname": "check_out_type",
+   "fieldtype": "Link",
+   "label": "Check Out Stock Entry Type",
+   "options": "Stock Entry Type"
+  },
+  {
+   "fieldname": "check_in_type",
+   "fieldtype": "Link",
+   "label": "Check In Stock Entry Type",
+   "options": "Stock Entry Type"
+  },
+  {
+   "fieldname": "column_break_equipment",
+   "fieldtype": "Column Break",
+   "label": "Column Break Equipment"
+  },
+  {
+   "fieldname": "office_warehouse",
+   "fieldtype": "Link",
+   "label": "Office Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "site_warehouse",
+   "fieldtype": "Link",
+   "label": "Site Warehouse",
+   "options": "Warehouse"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-30 14:28:53.001866",
+ "modified_by": "Administrator",
+ "module": "Asante One",
+ "name": "One Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Asante One Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "field:action_key",
+ "creation": "2026-10-30 14:28:52.073710",
+ "description": "A Frappe HR action shown on People and HR, quick actions and search. Routes are data, so a wrong route is fixed here without a deploy.",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "action_key",
+  "module",
+  "icon",
+  "sequence",
+  "column_break_routes",
+  "desk_route",
+  "mobile_route",
+  "record",
+  "verified",
+  "section_access",
+  "roles",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label",
+   "reqd": 1
+  },
+  {
+   "description": "Short id used by quick actions and search, for example leave",
+   "fieldname": "action_key",
+   "fieldtype": "Data",
+   "label": "Action Key",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "module",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Module",
+   "options": "Leaves\nShift and attendance\nExpenses\nPerformance\nRecruitment\nTenure\nTax and benefits\nHR setup",
+   "reqd": 1
+  },
+  {
+   "description": "Icon name from the ASANTE ONE icon set, for example leave, house, clock, book, people, map",
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence"
+  },
+  {
+   "fieldname": "column_break_routes",
+   "fieldtype": "Column Break",
+   "label": "Column Break Routes"
+  },
+  {
+   "description": "Opened on desktop, for example /desk/leave-application/new",
+   "fieldname": "desk_route",
+   "fieldtype": "Data",
+   "label": "Desk Route",
+   "reqd": 1
+  },
+  {
+   "description": "Opened on phones when set, for example /hrms/leave-applications/new",
+   "fieldname": "mobile_route",
+   "fieldtype": "Data",
+   "label": "Mobile Route"
+  },
+  {
+   "description": "What it opens, in plain words, for example Leave Application",
+   "fieldname": "record",
+   "fieldtype": "Data",
+   "label": "Record"
+  },
+  {
+   "default": "0",
+   "description": "Opened as a plain Employee on the live site and it works",
+   "fieldname": "verified",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Verified"
+  },
+  {
+   "fieldname": "section_access",
+   "fieldtype": "Section Break",
+   "label": "Access"
+  },
+  {
+   "description": "Leave empty for everyone. Otherwise only these roles see the action.",
+   "fieldname": "roles",
+   "fieldtype": "Table MultiSelect",
+   "label": "Roles",
+   "options": "One Role"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-30 14:28:52.073710",
+ "modified_by": "Administrator",
+ "module": "Asante One",
+ "name": "One HR Action",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Asante One Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
+ "sort_field": "sequence",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "label",
+ "track_changes": 1
+}
