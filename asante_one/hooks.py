@@ -17,6 +17,7 @@ add_to_apps_screen = [
 		"logo": "/assets/asante_one/images/logo.svg",
 		"title": "ASANTE ONE",
 		"route": "/one",
+		"has_permission": "asante_one.api.boot.check_app_permission",
 	}
 ]
 

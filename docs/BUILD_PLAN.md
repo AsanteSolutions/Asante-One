@@ -246,7 +246,7 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 - [ ] Policy folders on Drive organised to match the boxes (Thithi)
 - [ ] Incident report template link (Thithi)
 - [ ] Tool guides and what we track per tool (Thithi)
-- [ ] Link a test Google calendar for development (Apile). Thithi connects the real one in production
+- [x] Link a test Google calendar for development (Apile). Thithi connects the real one in production
 - [x] Who to ask names: Lindokuhle Nyawo, Luthando, Wandile, Khotso (Apile). Office Champion, HR partner and Marketing still to name
 - [ ] 4 November 2026 and the 2027 public holidays in the Holiday List (Apile)
 - [ ] Department toolkits, quick actions and reminders (each Lead, via Thithi)

@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"hdrcontent\", \"type\": \"header\", \"data\": {\"text\": \"\\u003cspan class=\\\"h4\\\"\\u003e\\u003cb\\u003eManage content\\u003c/b\\u003e\\u003c/span\\u003e\", \"col\": 12}}, {\"id\": \"announceme\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Announcements\", \"col\": 3}}, {\"id\": \"policies\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Policies\", \"col\": 3}}, {\"id\": \"policy_box\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Policy boxes\", \"col\": 3}}, {\"id\": \"resources\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Resources\", \"col\": 3}}, {\"id\": \"tools_we_u\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tools we use\", \"col\": 3}}, {\"id\": \"who_to_ask\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Who to ask\", \"col\": 3}}, {\"id\": \"department\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department profiles\", \"col\": 3}}, {\"id\": \"hr_actions\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR actions\", \"col\": 3}}, {\"id\": \"hdrsetup\", \"type\": \"header\", \"data\": {\"text\": \"\\u003cspan class=\\\"h4\\\"\\u003e\\u003cb\\u003eSetup\\u003c/b\\u003e\\u003c/span\\u003e\", \"col\": 12}}, {\"id\": \"settings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"One Settings\", \"col\": 3}}, {\"id\": \"holidays\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Holiday List\", \"col\": 3}}, {\"id\": \"events\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Company calendar events\", \"col\": 3}}, {\"id\": \"openone\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open ASANTE ONE\", \"col\": 3}}]",
+ "content": "[{\"id\": \"hdr0\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Home page</b></span>\", \"col\": 12}}, {\"id\": \"announceme0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Announcements\", \"col\": 3}}, {\"id\": \"hdr1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Library</b></span>\", \"col\": 12}}, {\"id\": \"policies1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Policies\", \"col\": 3}}, {\"id\": \"policy_box1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Policy boxes\", \"col\": 3}}, {\"id\": \"resources1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Resources\", \"col\": 3}}, {\"id\": \"tools_we_u1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tools we use\", \"col\": 3}}, {\"id\": \"hdr2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>People and teams</b></span>\", \"col\": 12}}, {\"id\": \"who_to_ask2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Who to ask\", \"col\": 3}}, {\"id\": \"department2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Department profiles\", \"col\": 3}}, {\"id\": \"hr_actions2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"HR actions\", \"col\": 3}}, {\"id\": \"hdr3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Calendar</b></span>\", \"col\": 12}}, {\"id\": \"holiday_li3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Holiday List\", \"col\": 3}}, {\"id\": \"events3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Events\", \"col\": 3}}, {\"id\": \"google_cal3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Google Calendar\", \"col\": 3}}, {\"id\": \"hdr4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Setup</b></span>\", \"col\": 12}}, {\"id\": \"one_settin4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"One Settings\", \"col\": 3}}, {\"id\": \"open_asant4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open ASANTE ONE\", \"col\": 3}}]",
  "creation": "2026-10-30 14:30:08.233292",
  "custom_blocks": [],
  "docstatus": 0,
@@ -13,7 +13,7 @@
  "label": "Asante One",
  "link_type": "DocType",
  "links": [],
- "modified": "2026-10-30 14:30:08.233292",
+ "modified": "2026-11-03 10:00:00",
  "modified_by": "Administrator",
  "module": "Asante One",
  "name": "Asante One",
@@ -80,12 +80,6 @@
    "type": "DocType"
   },
   {
-   "doc_view": "",
-   "label": "One Settings",
-   "link_to": "One Settings",
-   "type": "DocType"
-  },
-  {
    "doc_view": "List",
    "label": "Holiday List",
    "link_to": "Holiday List",
@@ -93,8 +87,20 @@
   },
   {
    "doc_view": "List",
-   "label": "Company calendar events",
+   "label": "Events",
    "link_to": "Event",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Google Calendar",
+   "link_to": "Google Calendar",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "One Settings",
+   "link_to": "One Settings",
    "type": "DocType"
   },
   {

@@ -33,6 +33,11 @@ def get_boot():
 	}
 
 
+def check_app_permission():
+	"""Show ASANTE ONE on the apps screen to staff, not to website users such as course learners."""
+	return frappe.get_cached_value("User", frappe.session.user, "user_type") == "System User"
+
+
 def is_admin(roles):
 	return bool(ADMIN_ROLES.intersection(roles))
 

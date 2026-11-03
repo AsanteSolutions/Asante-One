@@ -1,0 +1,23 @@
+{
+  "app": "asante_one",
+  "creation": "2026-11-03 12:26:47.957808",
+  "docstatus": 0,
+  "doctype": "Dock",
+  "idx": 0,
+  "items": [
+    {
+      "added": 1,
+      "hidden": 0,
+      "icon": "layout-grid",
+      "link_to": "Asante One",
+      "link_type": "Sidebar",
+      "title": "Manage content"
+    }
+  ],
+  "modified": "2026-11-03 14:59:03.804846",
+  "modified_by": "Administrator",
+  "name": "asante_one",
+  "owner": "Administrator",
+  "standard": 1,
+  "user": ""
+}

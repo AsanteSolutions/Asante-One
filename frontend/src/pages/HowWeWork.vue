@@ -14,7 +14,7 @@
 		</div>
 	</div>
 
-	<nav class="-mx-4 mb-6 flex gap-0.5 overflow-x-auto border-b border-line px-4 nav:mx-0 nav:px-0" aria-label="How we work">
+	<nav class="-mx-4 mb-6 flex gap-0.5 overflow-x-auto overflow-y-clip border-b border-line px-4 nav:mx-0 nav:px-0" aria-label="How we work">
 		<RouterLink
 			v-for="t in TABS"
 			:key="t.key"
