@@ -9,7 +9,7 @@
 | Lead time | Three weeks from handover, weekly check in with Thithi, Muhle and Luthando |
 | Status | Planning, 30 Oct 2026 |
 
-ASANTE ONE is the front door for Asante Solutions employees. It organises information and sends people to the system that owns the work. It does not store operational records.
+ASANTE ONE is the front door for Asante Solutions employees. It organises information and sends people to the system that owns the work. It does not store operational records, so the Friday report is not part of it.
 
 ---
 
@@ -108,7 +108,7 @@ add_to_apps_screen = [
 ]
 ```
 
-Then set **System Settings › Default App = asante_one**. This happens at launch, after testing, not before.
+Landing on ASANTE ONE after login is the Default App setting, set at launch (section 12).
 
 ---
 
@@ -149,18 +149,17 @@ This covers EMP201 (the 7th), EMP501 (31 October and 31 May), month end close an
 
 - Each HR action stores a desk route and a mobile route. The client picks one by viewport and opens it in a new tab.
 - In week 0, open every route as a plain Employee and tick "verified". The routes to verify are listed in section 4 of the brief.
-- Enable `create_user_permission` on Employee (or add User Permissions) so `/desk/employee` shows only the person's own record.
 - Stretch goal: show the leave balance number on Home using HRMS `get_leave_details`.
 
 ### Holidays
 
-- Generate the Holiday List for ZA for the current and next year, add proclaimed days as rows, and point One Settings at it. Apile loads the 2026 proclaimed day (4 November) and the 2027 list.
+- The hub reads the default Holiday List set in One Settings. Generating it and adding proclaimed days is setup (section 12).
 - Acceptance test 5 then becomes checking the list against gov.za.
 - Shutdown and closure days are not added here. Thithi puts them on the company holiday calendar (see below). Whether they count as leave stays an HR setting, outside the hub.
 
 ### Company holiday calendar
 
-- One calendar appears in the hub: the company holiday calendar, owned by Thithi. Thithi connects it once in production, from the Google account that owns it, as a Google Calendar record, with pull from Google and `sync_as_public` enabled. Until then a test calendar is linked for development.
+- One calendar appears in the hub: the company holiday calendar, owned by Thithi and set in One Settings. A test calendar is linked for development; connecting the real one is setup (section 12).
 - The hub reads `Event` rows from that calendar. Admins can also add Events directly in Desk.
 - Shutdown and closure days live on this calendar too, so there is no separate company dates DocType. Thithi puts "Shutdown" or "Closed" in the event title and the hub shows it as a day off. Admins can also set `one_category` on the Event in Desk.
 - Repeating events show their first occurrence only. Thithi is told this; expanding repeats is not in version 1.
@@ -173,7 +172,6 @@ The model to agree with Lindo:
 - Two Stock Entry Types, both with purpose **Material Transfer**:
   - **Check Out**: Office to Site
   - **Check In**: Site to Office
-- Stop using Material Issue and Material Receipt pairs for shoots, and correct the reversed "From Office To Site" type.
 
 Once that is in place:
 
@@ -185,7 +183,6 @@ Once that is in place:
 
 - The Check Out button links to `/desk/stock-entry/new?stock_entry_type=Check%20Out`. Verify that v16 desk honours query string prefill. If not, add a small whitelisted method that creates a draft entry and redirects to it.
 - Personally issued kit (laptops, phones) does not fit warehouse stock. Use ERPNext **Asset** with `custodian`, or serial numbers. Lindo decides; "My equipment" needs one of them.
-- Moving the remaining register rows into ERPNext is data entry for Lindo, not code.
 
 ### Google Drive and ClickUp
 
@@ -239,31 +236,23 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 
 ## 9. Schedule
 
-### Week 0: before coding (mostly other people's input)
+### Week 0: before coding
 
 - [x] Verify every HR route as a plain Employee (Apile)
 - [ ] Agree the equipment model and Stock Entry Types (Apile and Lindo)
-- [ ] Policy folders on Drive organised to match the boxes (Thithi)
-- [ ] Incident report template link (Thithi)
-- [ ] Tool guides and what we track per tool (Thithi)
-- [x] Link a test Google calendar for development (Apile). Thithi connects the real one in production
-- [x] Who to ask names: Lindokuhle Nyawo, Luthando, Wandile, Khotso (Apile). Office Champion, HR partner and Marketing still to name
-- [ ] 4 November 2026 and the 2027 public holidays in the Holiday List (Apile)
-- [ ] Department toolkits, quick actions and reminders (each Lead, via Thithi)
-- [ ] Year end shutdown and closure dates on the company holiday calendar (Thithi)
-- [ ] Friday report decision (Thithi and Muhle, asked)
+- [x] Link a test Google calendar for development (Apile)
+- [x] Who to ask names for the build: Lindokuhle Nyawo, Luthando, Wandile, Khotso (Apile)
+- [x] Friday report decision: not part of ASANTE ONE
 
 ### Weeks 1 to 3
 
 | Week | Backend | Frontend | Done when |
 |---|---|---|---|
-| **1** | DocTypes, fixtures, roles, One Settings, `get_boot` and `get_home`, Holiday List set up, Desk workspace, seed data from the prototype (policies, resources, help, department profiles) | Scaffold, `www/one`, shell, theming, Home (greeting, announcement banner and pop up, quick actions, coming up) | Logging in lands on `/one` with a real name and photo. Thithi publishes an announcement in Desk and it pops up |
-| **2** | Content APIs, reminder rule engine with tests, Google Calendar sync configured, cache invalidation | People and HR, Policies, Life (list, month, memories), How we work (four tabs), search palette, department section | Every page except Equipment works with real content. Acceptance tests 2 to 6 and 10 pass |
+| **1** | DocTypes, fixtures, roles, One Settings, `get_boot` and `get_home`, Desk workspace, seed data from the prototype (policies, resources, help, department profiles) | Scaffold, `www/one`, shell, theming, Home (greeting, announcement banner and pop up, quick actions, coming up) | Logging in lands on `/one` with a real name and photo. Thithi publishes an announcement in Desk and it pops up |
+| **2** | Content APIs, reminder rule engine with tests, company calendar events, cache invalidation | People and HR, Policies, Life (list, month, memories), How we work (four tabs), search palette, department section | Every page except Equipment works with real content. Acceptance tests 2 to 6 and 10 pass |
 | **3** | Equipment API (Bin, Stock Entry, Asset), permission tests, performance pass | Equipment page, PWA manifest, 390px pass, dark mode pass, empty and error states | Acceptance tests 1, 7 to 9 and 11 pass. UAT with Thithi, then deploy |
 
 **Main schedule risk:** if the equipment model is not agreed by the end of week 1, week 3 slips. Fallback: ship Equipment as links only (Check out, Check in, Open ERPNext, purchase list, incident template) and add the live views afterwards.
-
-If the Friday report is confirmed, it is extra scope on top of these three weeks (section 10).
 
 ---
 
@@ -272,9 +261,7 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 | Owner | Decision | Blocks |
 |---|---|---|
 | Apile and Lindo | Equipment model: Check Out and Check In as Material Transfer, `asset_champion` field, Asset or serial numbers for personally issued kit | Equipment page (week 3) |
-| Thithi and Muhle | Whether the Friday report stays. Asked; awaiting an answer. If it stays, it is the one feature that stores operational records, and it needs its own estimate | Scope |
 | Apile | Frappe capability list: what we use today and what we do not (requested by Muhle, 21 Oct) | Nothing in this build |
-| Group | Policy folder setup: one central folder plus department copies, and how copies stay in sync | Policy content |
 
 ---
 
@@ -312,15 +299,33 @@ If the Friday report is confirmed, it is extra scope on top of these three weeks
 
 ---
 
-## 12. Deployment runbook
+## 12. Setup after the build
+
+Configuration and content in the live system. None of it needs code or blocks the build: admins do it in Desk, Google Calendar or Google Drive, and the app shows each item once it is there.
+
+### Deploy
 
 1. `bench build --app asante_one` (the root `package.json` build script builds the SPA)
-2. `bench --site <site> migrate` (installs DocTypes and fixtures)
-3. System Settings › Default App = `asante_one`, at launch, after UAT
-4. Roles: Asante One Admin for Thithi and Muhle (Administrator already sees everything through System Manager); Company Assets Custodian for Lindokuhle Nyawo. A user with a Role Profile only keeps roles that come from a profile, so add the "Asante One Admin" or "Company Assets Custodian" Role Profile (shipped as fixtures) to their role profiles; give the role directly only to users with no profile
-5. Holiday List: generate ZA holidays for the current and next year, add proclaimed days, select it in One Settings
-6. Google Calendar: Thithi connects the company holiday calendar with `sync_as_public`; set it in One Settings
-7. Employee: confirm every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set
-8. Stock Entry Types: confirm Check Out and Check In exist with the agreed warehouses
-9. Seed content: load or enter policies, resources, tools, help topics and department profiles
-10. Smoke test as one admin and one employee on desktop and phone
+2. `bench --site <site> migrate` (installs the DocTypes, fixtures, workspace, sidebar and rail)
+3. Smoke test as one admin and one employee on desktop and phone
+
+### Configure the system
+
+- [ ] Roles: Asante One Admin for Thithi and Muhle (Administrator already sees everything through System Manager); Company Assets Custodian for Lindokuhle Nyawo. A user with a Role Profile only keeps roles that come from a profile, so add the "Asante One Admin" or "Company Assets Custodian" Role Profile (shipped as fixtures) to their role profiles; give the role directly only to users with no profile (Apile)
+- [ ] Employee users: every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set so `/desk/employee` shows only their own record (Apile)
+- [ ] Holiday List: generate ZA holidays for the current and next year, add proclaimed days (4 November 2026) and the 2027 list, and select it in One Settings (Apile)
+- [ ] Company holiday calendar: connect it from the Google account that owns it, as a Google Calendar record with pull from Google and `sync_as_public`, and set it in One Settings in place of the test calendar. The scheduler must be on for it to keep syncing (Thithi, with Apile)
+- [ ] Equipment: create Check Out and Check In with the agreed warehouses and set them in One Settings, correct the reversed "From Office To Site" type, and stop logging shoots as Material Issue and Material Receipt pairs (Lindokuhle Nyawo, with Apile)
+- [ ] Links in One Settings: incident report template, purchase list, equipment process, Operations Drive and ClickUp (Thithi)
+- [ ] Default App: System Settings › Default App = `asante_one`, at launch, after UAT (Apile)
+
+### Add content
+
+- [ ] Seed content: load or enter policies, resources, tools, help topics and department profiles (Apile)
+- [ ] Policy folders on Drive organised to match the boxes. Decide first between one central folder and department copies, and how copies stay in sync (Thithi, with the Leads)
+- [ ] Tool guides and what we track per tool (Thithi)
+- [ ] Who to ask: name the Office Champion, the HR partner and the Marketing contact (Thithi)
+- [ ] Department toolkits, quick actions and reminders (each Lead, via Thithi)
+- [ ] Year end shutdown and closure dates on the company holiday calendar (Thithi)
+- [ ] Equipment register: move the remaining rows into ERPNext (Lindokuhle Nyawo)
+- [ ] After each company event: a cover image and photo folder on the Event's ASANTE ONE tab, so it shows as a memory (Thithi)
