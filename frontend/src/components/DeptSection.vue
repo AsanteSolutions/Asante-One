@@ -53,17 +53,16 @@
 			<div v-if="equipment.length">
 				<h3 class="mb-2 text-sm text-grey">Equipment</h3>
 				<div class="grid grid-cols-2 gap-1.5">
-					<a
+					<component
+						:is="e.to ? RouterLink : 'a'"
 						v-for="e in equipment"
 						:key="e.label"
-						:href="e.href"
-						target="_blank"
-						rel="noopener"
+						v-bind="e.to ? { to: e.to } : { href: e.href, target: '_blank', rel: 'noopener' }"
 						class="flex flex-col gap-1.5 rounded-xl border border-line p-2.5 text-[13px] font-semibold no-underline hover:border-lav-2"
 					>
 						<Icon :name="e.icon" class="h-[18px] w-[18px] text-accent" />
 						{{ e.label }}
-					</a>
+					</component>
 				</div>
 			</div>
 		</div>
@@ -72,6 +71,7 @@
 
 <script setup>
 import { computed } from "vue"
+import { RouterLink } from "vue-router"
 import { boot } from "@/boot"
 import { daysBetween, parts, todayISO } from "@/utils/dates"
 import Icon from "@/components/Icon.vue"
@@ -96,13 +96,13 @@ function due(iso) {
 	return days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`
 }
 
-// Equipment shortcuts until the Equipment page arrives; the custodian also gets the register and purchase list
+// Check out and check in open ERPNext; the custodian also gets the full register
 const equipment = computed(() => {
 	const links = boot.links
 	return [
-		boot.is_custodian && { label: "Register in ERPNext", icon: "box", href: "/desk/item" },
-		boot.is_custodian && links.purchase_list && { label: "Purchase list", icon: "receipt", href: links.purchase_list },
-		links.equipment_process && { label: "Equipment process", icon: "book", href: links.equipment_process },
+		links.check_out && { label: "Check out kit", icon: "box", href: links.check_out },
+		links.check_in && { label: "Check in kit", icon: "check", href: links.check_in },
+		boot.is_custodian ? { label: "Full register", icon: "grid", to: "/equipment/register" } : { label: "Available kit", icon: "camera", to: "/equipment/kit" },
 		links.incident_template && { label: "Incident report", icon: "alert", href: links.incident_template },
 	].filter(Boolean)
 })

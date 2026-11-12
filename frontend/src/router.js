@@ -11,7 +11,7 @@ const routes = [
 	{ path: "/life", ...page(() => import("@/pages/Life.vue"), "Life at Asante Solutions") },
 	{ path: "/life/:name", props: true, ...page(() => import("@/pages/LifeEvent.vue"), "Life at Asante Solutions") },
 	{ path: "/how-we-work/:tab?", props: true, ...page(() => import("@/pages/HowWeWork.vue"), "How we work") },
-	{ path: "/equipment/:tab?", ...later("Equipment") },
+	{ path: "/equipment/:tab?", props: true, ...page(() => import("@/pages/Equipment.vue"), "Equipment") },
 	{ path: "/more", ...later("More") },
 	{ path: "/:path(.*)*", component: () => import("@/pages/NotFound.vue"), meta: { title: "Not found" } },
 ]

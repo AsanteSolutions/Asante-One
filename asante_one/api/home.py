@@ -9,7 +9,7 @@ from frappe.utils import add_days, get_datetime, getdate, now_datetime
 from frappe.utils.data import strip_html
 
 from asante_one.api import rules
-from asante_one.api.boot import get_content, get_department_profile, get_employee
+from asante_one.api.boot import get_content, get_department_profile, get_employee, photos
 
 COMING_UP_DAYS = 90
 COMING_UP_COUNT = 6
@@ -284,14 +284,7 @@ def get_celebrations(settings, start, end):
 		filters={"status": "Active"},
 		fields=["name", "employee_name", "user_id", "date_of_birth", "date_of_joining"],
 	)
-	images = dict(
-		frappe.get_all(
-			"User",
-			filters={"name": ("in", [e.user_id for e in employees if e.user_id])},
-			fields=["name", "user_image"],
-			as_list=True,
-		)
-	)
+	images = photos(e.user_id for e in employees)
 
 	items = []
 	for employee in employees:

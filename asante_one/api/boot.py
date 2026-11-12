@@ -25,7 +25,7 @@ def get_boot():
 		"is_admin": is_admin(roles),
 		"is_custodian": is_admin(roles) or CUSTODIAN_ROLE in roles,
 		"timezone": get_system_timezone(),
-		"links": get_links(),
+		"links": get_links(employee),
 		"hr_actions": content["hr_actions"],
 		"quick_actions": get_quick_actions(employee, content["hr_actions"]),
 		"search": content["search"] + get_department_search(employee),
@@ -76,7 +76,9 @@ def get_employee():
 	return employee
 
 
-def get_links():
+def get_links(employee):
+	from asante_one.api.equipment import get_check_links
+
 	settings = frappe.get_cached_doc("One Settings")
 	return {
 		"desk": "/desk",
@@ -86,6 +88,7 @@ def get_links():
 		"incident_template": settings.incident_template_url,
 		"purchase_list": settings.purchase_list_url,
 		"equipment_process": settings.equipment_process_url,
+		**get_check_links(employee),
 	}
 
 
@@ -263,20 +266,33 @@ def get_help_topics():
 		if people
 		else []
 	)
-	images = dict(
-		frappe.get_all(
-			"User",
-			filters={"name": ("in", [u for u in users.values() if u])},
-			fields=["name", "user_image"],
-			as_list=True,
-		)
-		if users
-		else []
-	)
+	images = photos(users.values())
 	for topic in topics:
 		topic.person_image = images.get(users.get(topic.person))
 		del topic["person"]
 	return topics
+
+
+def photos(users):
+	"""Profile photos by User, for showing other people.
+
+	A private photo would not open for them, so it is left out and their initials show instead.
+	"""
+	users = [u for u in users if u]
+	if not users:
+		return {}
+	return {
+		name: image
+		for name, image in frappe.get_all(
+			"User", filters={"name": ("in", users)}, fields=["name", "user_image"], as_list=True
+		)
+		if public_file(image)
+	}
+
+
+def public_file(url):
+	"""The URL when everyone can open it: not a private file."""
+	return url if url and not url.startswith("/private/") else None
 
 
 def build_search(hr_actions, policies, resources, tools, help_topics):

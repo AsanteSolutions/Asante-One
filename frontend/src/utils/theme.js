@@ -13,10 +13,18 @@ function stored() {
 
 export const isDark = ref(stored() ? stored() === "dark" : system.matches)
 
+// The phone's status bar follows the chosen theme, not only the system one
+function setThemeColour() {
+	const colour = getComputedStyle(document.documentElement).getPropertyValue("--canvas").trim()
+	document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute("content", colour))
+}
+if (stored()) setThemeColour()
+
 export function toggleTheme() {
 	isDark.value = !isDark.value
 	const theme = isDark.value ? "dark" : "light"
 	document.documentElement.setAttribute("data-theme", theme)
+	setThemeColour()
 	try {
 		localStorage.setItem(KEY, theme)
 	} catch {

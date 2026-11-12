@@ -55,7 +55,7 @@ website_route_rules = [{"from_route": "/one/<path:app_path>", "to_route": "one"}
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Stock Entry": "public/js/stock_entry.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_kanban_js = {"doctype" : "public/js/doctype_kanban.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -65,6 +65,9 @@ website_route_rules = [{"from_route": "/one/<path:app_path>", "to_route": "one"}
 # ------------------
 # include app icons in desk
 # app_include_icons = "asante_one/public/icons.svg"
+
+# Desk boot: the Check Out and Check In warehouses, for the Stock Entry form script
+extend_bootinfo = "asante_one.api.equipment.extend_bootinfo"
 
 # Home Pages
 # ----------
@@ -178,6 +181,7 @@ doc_events = {
 	for doctype in _content_doctypes
 }
 doc_events["User"] = {"on_update": "asante_one.api.cache.clear_if_photo_changed"}
+doc_events["Stock Entry"] = {"validate": "asante_one.api.equipment.validate_stock_entry"}
 
 fixtures = [
 	{"dt": "Role", "filters": [["name", "in", ["Asante One Admin", "Company Assets Custodian"]]]},

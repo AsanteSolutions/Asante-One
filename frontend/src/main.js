@@ -7,6 +7,12 @@ import { loadBoot } from "./boot"
 
 setConfig("resourceFetcher", frappeRequest)
 
+// frappe-ui rethrows a failed request after recording it on the resource. Every page shows its own
+// message for that, so a server error is not also reported as uncaught; any other error still is.
+window.addEventListener("unhandledrejection", (event) => {
+	if (event.reason?.exc_type) event.preventDefault()
+})
+
 loadBoot().then(
 	() => createApp(App).use(router).mount("#app"),
 	() => {

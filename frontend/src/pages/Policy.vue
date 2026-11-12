@@ -62,7 +62,7 @@
 	</div>
 
 	<div v-else-if="policy.error" class="mx-auto my-10 max-w-[560px] rounded-[14px] border-[1.5px] border-dashed border-line-2 bg-canvas p-5 text-center text-sm text-ink-2">
-		<b class="mb-1 block text-ink">This policy could not be found</b>
+		<b class="mb-1 block text-ink">{{ notFound(policy.error) ? "This policy could not be found" : "This policy could not load. Refresh the page to try again." }}</b>
 		<RouterLink to="/policies" class="link">See all policies</RouterLink>
 	</div>
 	<div v-else class="flex flex-col gap-3" aria-busy="true">
@@ -74,6 +74,7 @@
 <script setup>
 import { computed, watch } from "vue"
 import { createResource } from "frappe-ui"
+import { notFound } from "@/utils/errors"
 import { STATUS } from "@/data"
 import { formatDate } from "@/utils/dates"
 import Icon from "@/components/Icon.vue"

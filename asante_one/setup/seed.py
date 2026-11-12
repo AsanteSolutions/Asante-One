@@ -1059,13 +1059,11 @@ DEPARTMENTS = {
 	},
 	("Media Production",): {
 		"quick_actions": [
-			link("Equipment process", "Check out and check in", "book", DRIVE["equipment_process"]),
-			link("Open ERPNext", "Equipment register", "grid", "/desk"),
+			page("Available kit", "Shoot kit in the office", "camera", "/equipment/kit"),
+			page("My equipment", "Kit you have out", "box", "/equipment"),
 		],
 		"tools": [
-			tool(
-				"ERPNext: equipment", "Check out, check in, stock ledger", "/desk", "box", "Route to verify"
-			),
+			tool("ERPNext: equipment", "Check outs and check ins", "/desk/stock-entry", "box"),
 			tool(
 				"Equipment process",
 				"Check out, checks, labels, Asset Champion",
@@ -1207,16 +1205,12 @@ DEPARTMENTS = {
 	},
 	("Operations",): {
 		"quick_actions": [
-			link("Open ERPNext", "Equipment register", "grid", "/desk"),
+			page("Equipment", "Kit and who has it", "camera", "/equipment/out"),
 			link("Purchase list", "Equipment requests", "receipt", DRIVE["purchase_list"]),
 		],
 		"tools": [
 			tool(
-				"ERPNext: equipment register",
-				"Items, check outs, stock ledger",
-				"/desk",
-				"box",
-				"Route to verify",
+				"ERPNext: equipment register", "Items, check outs, stock ledger", "/desk/stock-entry", "box"
 			),
 			tool("Equipment purchase list", "Requests and purchases", DRIVE["purchase_list"], "receipt"),
 			tool(

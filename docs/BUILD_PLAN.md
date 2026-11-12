@@ -23,7 +23,7 @@ These come from checking the brief against the bench and the local site (`asante
 | Frappe's **Google Calendar** integration can pull a calendar into the `Event` DocType with `sync_as_public`. | The company holiday calendar needs no custom OAuth code. Thithi owns it and connects it once; the hub reads public `Event` rows. |
 | **Employee** already holds `date_of_birth`, `date_of_joining`, `department` and `branch`; **User** holds `user_image`, which each person uploads on their own profile. HRMS already sends birthday reminders. | Birthdays and anniversaries come from Employee, not from a Google birthdays calendar. Birthdays are already celebrated company wide, so every active employee is shown and no consent field is needed. Photos come from the linked User's `user_image`, so people choose their own and no photo consent field is needed either; anyone without one gets initials. |
 | Frappe v16 has `add_to_apps_screen` and a **Default App** setting at system and user level (see `hrms/hooks.py`). | Landing on ASANTE ONE after login is configuration, not a custom redirect. |
-| Equipment on the local site: check out is mostly logged as **Material Issue** ("To Site"), returns as **Material Receipt** ("Return From Site"). The single "From Office To Site" entry has its warehouses reversed. No item is serialised. 51 items exist in ERPNext against 197 rows in the asset register sheet. | Stock balances cannot currently show what is out or who has it. The model must be agreed with Lindo before the Equipment page is built (section 6). |
+| Equipment on the local site (5 November 2026): since April, shoots are logged as Material Transfer pairs, "From Office To Site" and "From Site To Office" (17 entries each). Older Material Issue ("To Site") and Material Receipt ("Return From Site") entries remain. Three entries are wrong: one "From Office To Site" entry goes Site to Office, one goes Office to Office, and one "Return From Site" receipt went into Site. Nothing records who took the kit: `custom_submitted_by` holds the custodian who logged the entry. No item is serialised and there are no Assets. 48 items exist in ERPNext against 197 rows in the asset register sheet. | The transfer pairs become Check Out and Check In. Stock in Site shows what is out but not who has it, so Stock Entry gains `asset_champion` (section 5). The Site balance needs a stock count before Out now can be trusted. Personal kit becomes Assets (section 6). |
 
 ---
 
@@ -66,7 +66,7 @@ Two principles keep this inside three weeks:
 | Frontend | Vue 3, Vite, frappe-ui, Vue Router, served at `/one` | Same pattern as `/hrms`, Helpdesk and CRM; `createResource` handles session and CSRF |
 | Styling | Tailwind, with the prototype's CSS variables (`--canvas`, `--accent` and so on) mapped into the theme; light and dark via `data-theme` | Keeps the prototype's look. frappe-ui is used for behaviour (dialogs, dropdowns), not its default skin |
 | Fonts and icons | Bricolage Grotesque and Hanken Grotesk self hosted in `public/`; prototype SVG icons as a small component (or Lucide) | No Google Fonts call; works offline |
-| PWA | `vite-plugin-pwa`, as HRMS uses | "Add to home screen" so Check out and Check in are two taps on location |
+| PWA | A web app manifest and icons in `public/manifest`, with Equipment shortcuts. No service worker: one served from `/assets` cannot control `/one` (HRMS's only handles push notifications), and the page carries the person's boot data, so it should never come from a cache | "Add to home screen" so Check out and Check in are two taps on location |
 | Tests | `FrappeTestCase` for API and permissions; Playwright smoke tests at 390px | Covers the permission and mobile acceptance tests |
 
 Scaffold the SPA from the frappe-ui starter (doppio's `bench add-spa`, or copy the setup in `apps/hrms/frontend`). Pin a frappe-ui version compatible with v16 rather than reusing HRMS's older 0.1.105. Check the current starter before choosing.
@@ -167,22 +167,31 @@ This covers EMP201 (the 7th), EMP501 (31 October and 31 May), month end close an
 
 ### Equipment (ERPNext)
 
-The model to agree with Lindo:
+Shoot kit is stock that moves between two warehouses. Personal kit is Assets.
 
-- Two Stock Entry Types, both with purpose **Material Transfer**:
+**Shoot kit (stock)**
+
+- Two Stock Entry Types, both with purpose **Material Transfer**. They are the existing "From Office To Site" and "From Site To Office" types renamed, so the entries already logged still count:
   - **Check Out**: Office to Site
   - **Check In**: Site to Office
-
-Once that is in place:
+- Every Check Out and Check In names the `asset_champion`, the employee taking or returning the kit.
+- New kit is a Material Receipt into Office, as now.
 
 | View | Query |
 |---|---|
 | Available kit | `Bin` quantity in the Office warehouse |
 | Out now | `Bin` quantity in the Site warehouse |
-| Who has it | latest Check Out entry per item, via `asset_champion` |
+| Who has it | per item and `asset_champion`, quantity checked out less quantity checked in. Several people can hold units of the same item at once, so the latest Check Out is not enough |
 
-- The Check Out button links to `/desk/stock-entry/new?stock_entry_type=Check%20Out`. Verify that v16 desk honours query string prefill. If not, add a small whitelisted method that creates a draft entry and redirects to it.
-- Personally issued kit (laptops, phones) does not fit warehouse stock. Use ERPNext **Asset** with `custodian`, or serial numbers. Lindo decides; "My equipment" needs one of them.
+- The Check Out and Check In buttons open `/desk/stock-entry/new` with the type and the person's `asset_champion` in the address. Desk does not copy the warehouses from the address (they are `no_copy`), so a Stock Entry form script fills them in from the type, which also helps when an entry is started in Desk. A `validate` hook refuses a Check Out or Check In with nobody named or with the wrong warehouses.
+
+**Personal kit (Asset)**
+
+- Laptops and phones are ERPNext **Assets**, one per device, with `custodian` set to the person who has it. The Asset ID identifies the device, so no serial numbers are needed (Asset has no serial number field). If the maker's serial number is wanted for insurance, it goes in the asset name.
+- A hand over is an **Asset Movement** from one employee to another. ERPNext checks that the "from" employee is the current custodian and updates the Asset, and the movements are the history.
+- Each device type needs an Item marked fixed asset and not stock (ERPNext refuses an Asset on a stock item), an Asset Category with a fixed asset account, and a Location. Devices already owned are entered as **Existing Asset** with a purchase date and amount and depreciation off, so nothing posts to the accounts.
+- Shoot kit stays stock: SD cards and batteries come in multiples and go out together, which stock quantities handle and one Asset per unit would not.
+- My equipment lists the Assets where the person is custodian, then the shoot kit they have out.
 
 ### Google Drive and ClickUp
 
@@ -239,7 +248,7 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 ### Week 0: before coding
 
 - [x] Verify every HR route as a plain Employee (Apile)
-- [ ] Agree the equipment model and Stock Entry Types (Apile and Lindo)
+- [ ] Agree the equipment model with Lindo: Check Out and Check In types, `asset_champion` on every entry, personal kit as Assets (Apile and Lindo)
 - [x] Link a test Google calendar for development (Apile)
 - [x] Who to ask names for the build: Lindokuhle Nyawo, Luthando, Wandile, Khotso (Apile)
 - [x] Friday report decision: not part of ASANTE ONE
@@ -260,7 +269,7 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 
 | Owner | Decision | Blocks |
 |---|---|---|
-| Apile and Lindo | Equipment model: Check Out and Check In as Material Transfer, `asset_champion` field, Asset or serial numbers for personally issued kit | Equipment page (week 3) |
+| Apile and Lindo | Equipment model: rename the transfer types to Check Out and Check In, and name the `asset_champion` on every entry. Personal kit is decided: Assets with a custodian | Equipment page (week 3) |
 | Apile | Frappe capability list: what we use today and what we do not (requested by Muhle, 21 Oct) | Nothing in this build |
 
 ---
@@ -281,7 +290,7 @@ Take the CSS tokens and layout from the prototype. Its rendering logic is templa
 - HR and equipment buttons carry the expected `href`
 - Admin only routes show no content for an employee
 
-**CI:** `.github/workflows/ci.yml` already exists. Add the frontend build and the Playwright run.
+**CI:** `.github/workflows/ci.yml` builds the frontend, runs the Python tests, then serves the test site and runs `frontend/tests/smoke.mjs` as an employee and as Administrator. The same script runs against a local site with session cookies (`ONE_EMPLOYEE_SID`, `ONE_ADMIN_SID`).
 
 ### Acceptance tests (from the brief)
 
@@ -315,12 +324,15 @@ Configuration and content in the live system. None of it needs code or blocks th
 - [ ] Employee users: every employee has a User on their company email, linked to the Employee record, with `create_user_permission` set so `/desk/employee` shows only their own record (Apile)
 - [ ] Holiday List: generate ZA holidays for the current and next year, add proclaimed days (4 November 2026) and the 2027 list, and select it in One Settings (Apile)
 - [ ] Company holiday calendar: connect it from the Google account that owns it, as a Google Calendar record with pull from Google and `sync_as_public`, and set it in One Settings in place of the test calendar. The scheduler must be on for it to keep syncing (Thithi, with Apile)
-- [ ] Equipment: create Check Out and Check In with the agreed warehouses and set them in One Settings, correct the reversed "From Office To Site" type, and stop logging shoots as Material Issue and Material Receipt pairs (Lindokuhle Nyawo, with Apile)
+- [ ] Equipment: rename "From Office To Site" and "From Site To Office" to Check Out and Check In and set them and the Office and Site warehouses in One Settings, stop logging shoots as "To Site" and "Return From Site", correct the three wrong entries, and count the kit out on Site so its stock matches (Lindokuhle Nyawo, with Apile)
+- [ ] Personal kit: an Asset Category with a fixed asset account, an Office Location, and a fixed asset, non-stock Item per device type (Wandile, with Apile)
+- [ ] Stock User: give it read access to Stock Settings in Role Permission Manager. Without it, every new Stock Entry shows "No permission for Stock Settings" to anyone who is not a Stock Manager. Shumba has no stock role at all, so they cannot check kit out yet (Apile)
 - [ ] Links in One Settings: incident report template, purchase list, equipment process, Operations Drive and ClickUp (Thithi)
 - [ ] Default App: System Settings › Default App = `asante_one`, at launch, after UAT (Apile)
 
 ### Add content
 
+- [ ] Profile photos: a photo uploaded as a private file only opens for its owner, so ASANTE ONE shows initials to everyone else. Khotso's is private; re-upload it as public, or untick Is Private on the File (Khotso, with Apile)
 - [ ] Seed content: load or enter policies, resources, tools, help topics and department profiles (Apile)
 - [ ] Policy folders on Drive organised to match the boxes. Decide first between one central folder and department copies, and how copies stay in sync (Thithi, with the Leads)
 - [ ] Tool guides and what we track per tool (Thithi)
@@ -328,4 +340,5 @@ Configuration and content in the live system. None of it needs code or blocks th
 - [ ] Department toolkits, quick actions and reminders (each Lead, via Thithi)
 - [ ] Year end shutdown and closure dates on the company holiday calendar (Thithi)
 - [ ] Equipment register: move the remaining rows into ERPNext (Lindokuhle Nyawo)
+- [ ] Personal kit: one Existing Asset per laptop and phone, with its custodian (Lindokuhle Nyawo)
 - [ ] After each company event: a cover image and photo folder on the Event's ASANTE ONE tab, so it shows as a memory (Thithi)

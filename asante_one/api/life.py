@@ -5,6 +5,7 @@ from frappe import _
 from frappe.utils import date_diff, getdate, now_datetime
 from frappe.utils.data import strip_html
 
+from asante_one.api.boot import public_file
 from asante_one.api.home import company_events, event_category, get_dates
 
 MAX_RANGE_DAYS = 400
@@ -41,7 +42,7 @@ def get_memories():
 			"date": getdate(e.starts_on),
 			"category": event_category(e),
 			"summary": strip_html(e.description or "").strip()[:160],
-			"cover_image": e.cover_image,
+			"cover_image": public_file(e.cover_image),
 			"photo_folder_url": e.photo_folder_url,
 		}
 		for e in events
@@ -76,6 +77,6 @@ def get_event(name):
 		"all_day": event.all_day,
 		"past": (event.ends_on or event.starts_on) < now_datetime(),
 		"description": event.description,
-		"cover_image": event.cover_image,
+		"cover_image": public_file(event.cover_image),
 		"photo_folder_url": event.photo_folder_url,
 	}

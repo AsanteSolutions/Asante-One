@@ -123,3 +123,18 @@ class IntegrationTestAPI(IntegrationTestCase):
 
 	def test_life_refuses_a_very_long_range(self):
 		self.assertRaises(frappe.ValidationError, get_life, "2026-01-01", "2028-01-01")
+
+	def test_employee_cannot_open_admin_doctypes(self):
+		user = "one-test-employee@example.com"
+		if not frappe.db.exists("User", user):
+			frappe.get_doc(
+				{"doctype": "User", "email": user, "first_name": "Test", "roles": [{"role": "Employee"}]}
+			).insert()
+		admin_doctypes = frappe.get_all(
+			"DocType", filters={"module": "Asante One", "istable": 0}, pluck="name"
+		)
+		self.assertTrue(admin_doctypes)
+		for doctype in admin_doctypes:
+			self.assertFalse(frappe.has_permission(doctype, "read", user=user), doctype)
+			self.assertFalse(frappe.has_permission(doctype, "write", user=user), doctype)
+		self.assertTrue(frappe.has_permission("One Settings", "write", user="Administrator"))

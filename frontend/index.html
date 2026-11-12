@@ -5,6 +5,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<title>ASANTE ONE</title>
 		<link rel="icon" href="/assets/asante_one/images/logo.svg" />
+		<!-- Add to home screen. No service worker: the page carries the person's boot data, so it is never served from a cache -->
+		<link rel="manifest" href="/assets/asante_one/manifest/manifest.webmanifest" />
+		<link rel="apple-touch-icon" href="/assets/asante_one/manifest/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-title" content="ASANTE ONE" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#131116" media="(prefers-color-scheme: dark)" />
 		<script>
 			// Set the theme before the stylesheet paints, so dark mode never flashes white
 			try {

@@ -105,3 +105,15 @@ jobs:
           bench --site test_site run-tests --app asante_one
         env:
           TYPE: server
+
+      - name: Smoke Tests
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench --site test_site execute asante_one.tests.smoke.create_employee_user
+          bench use test_site
+          bench serve --port 8000 > serve.log 2>&1 &
+          cd apps/asante_one/frontend
+          yarn install --frozen-lockfile
+          npx playwright-core install --with-deps chromium-headless-shell
+          timeout 60 bash -c 'until curl -sf http://localhost:8000/api/method/ping > /dev/null; do sleep 1; done'
+          ONE_EMPLOYEE="one-smoke@example.com:Smoke-test-only-1" ONE_ADMIN="Administrator:admin" node tests/smoke.mjs

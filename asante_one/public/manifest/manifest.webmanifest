@@ -1,0 +1,21 @@
+{
+	"id": "/one",
+	"name": "ASANTE ONE",
+	"short_name": "ASANTE ONE",
+	"description": "Asante Solutions employee hub",
+	"start_url": "/one",
+	"scope": "/one",
+	"display": "standalone",
+	"background_color": "#fbfaf8",
+	"theme_color": "#fbfaf8",
+	"icons": [
+		{ "src": "/assets/asante_one/manifest/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "/assets/asante_one/manifest/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+		{ "src": "/assets/asante_one/manifest/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+		{ "src": "/assets/asante_one/manifest/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+	],
+	"shortcuts": [
+		{ "name": "Equipment", "short_name": "Equipment", "url": "/one/equipment", "icons": [{ "src": "/assets/asante_one/manifest/icon-192.png", "sizes": "192x192" }] },
+		{ "name": "Available kit", "short_name": "Kit", "url": "/one/equipment/kit", "icons": [{ "src": "/assets/asante_one/manifest/icon-192.png", "sizes": "192x192" }] }
+	]
+}

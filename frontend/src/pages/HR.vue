@@ -49,7 +49,8 @@
 		<section>
 			<h2 class="text-[19px]">Before you apply</h2>
 			<p class="hint mb-2 mt-1">Read the rules first. The document in Drive is always the official one.</p>
-			<p v-if="library.loading && !library.data" class="hint">Loading…</p>
+			<p v-if="library.error" class="hint">This list could not load. Refresh the page to try again.</p>
+			<p v-else-if="library.loading && !library.data" class="hint">Loading…</p>
 			<div class="flex flex-col">
 				<LinkRow v-for="p in policies" :key="p.name" :to="`/policies/${p.name}`" icon="book" :title="p.title">
 					<StatusTag :status="p.status" />

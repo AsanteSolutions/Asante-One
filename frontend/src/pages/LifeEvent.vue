@@ -36,7 +36,11 @@
 		</div>
 	</div>
 
-	<Empty v-else-if="event.error" class="mx-auto my-10 text-center" title="This event could not be found">
+	<Empty
+		v-else-if="event.error"
+		class="mx-auto my-10 text-center"
+		:title="notFound(event.error) ? 'This event could not be found' : 'This event could not load. Refresh the page to try again.'"
+	>
 		<RouterLink to="/life" class="link">Back to Life at Asante Solutions</RouterLink>
 	</Empty>
 	<Skeleton v-else />
@@ -45,6 +49,7 @@
 <script setup>
 import { computed, watch } from "vue"
 import { createResource } from "frappe-ui"
+import { notFound } from "@/utils/errors"
 import { KINDS } from "@/data"
 import { shortDay, timeOf } from "@/utils/dates"
 import Empty from "@/components/Empty.vue"
