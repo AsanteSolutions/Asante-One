@@ -30,27 +30,44 @@
 	<p v-if="library.error" class="hint">This page could not load. Refresh the page to try again.</p>
 	<Skeleton v-else-if="!library.data" :rows="6" />
 
-	<!-- SOPs and templates -->
+	<!-- SOPs and templates: one list, filtered by category, like Policies -->
 	<template v-else-if="tab === 'sops'">
-		<input v-model="query" class="input mb-4 nav:max-w-[320px]" placeholder="Filter SOPs, folders and templates" aria-label="Filter SOPs, folders and templates" />
-		<div class="grid grid-cols-1 items-start gap-4 nav:grid-cols-2">
-			<section v-if="sops.length" class="panel">
-				<h2 class="text-lg">How we work</h2>
-				<div class="mt-1.5 flex flex-col">
-					<LinkRow v-for="p in sops" :key="p.name" :to="`/policies/${p.name}`" icon="book" :title="p.title" :subtitle="p.summary" />
-				</div>
-			</section>
-			<section v-for="group in folders" :key="group.category" class="panel">
-				<h2 class="text-lg">{{ group.category }}</h2>
-				<div class="mt-1.5 flex flex-col">
-					<LinkRow v-for="r in group.items" :key="r.name" :href="r.url" icon="folder" :title="r.title" :subtitle="[r.description, r.content_owner && `Owner: ${r.content_owner}`].filter(Boolean).join(' · ')">
-						<span v-if="r.restricted" class="tag bg-risk-bg text-risk">Restricted</span>
-					</LinkRow>
-				</div>
-			</section>
+		<div class="mb-3.5 flex flex-col gap-3 nav:flex-row nav:items-center">
+			<input v-model="query" class="input nav:max-w-[280px]" placeholder="Filter SOPs, folders and templates" aria-label="Filter SOPs, folders and templates" />
+			<div class="-mx-4 flex gap-1.5 overflow-x-auto px-4 nav:mx-0 nav:flex-wrap nav:px-0" role="group" aria-label="Category">
+				<button v-for="name in categories" :key="name" :class="['chip', category === name && 'chip-on']" :aria-pressed="category === name" @click="category = name">
+					{{ name }}
+				</button>
+			</div>
 		</div>
-		<p v-if="!sops.length && !folders.length" class="hint">Nothing matches. Try another word.</p>
-		<p class="hint mt-3">Every link opens the original in Google Drive. Opening it still depends on your Drive sharing.</p>
+
+		<section class="panel py-1.5 nav:py-1.5">
+			<component
+				:is="item.to ? RouterLink : 'a'"
+				v-for="item in shown"
+				:key="item.key"
+				v-bind="item.to ? { to: item.to } : { href: item.href, target: '_blank', rel: 'noopener' }"
+				class="group flex items-start justify-between gap-3 border-t border-line py-3 no-underline first:border-t-0"
+			>
+				<span class="min-w-0">
+					<span class="block font-semibold group-hover:text-accent">
+						{{ item.title }}
+						<Icon v-if="item.href" name="ext" class="ml-0.5 inline h-3.5 w-3.5 text-grey" />
+					</span>
+					<span v-if="item.summary" class="mt-0.5 block text-[13px] text-ink-2">{{ item.summary }}</span>
+					<span class="mt-1 flex flex-wrap gap-x-3.5 text-[12.5px] text-grey">
+						<span>{{ item.category }}</span>
+						<span>{{ item.to ? "SOP" : "Drive folder" }}</span>
+						<span v-if="item.owner">Owner: {{ item.owner }}</span>
+						<span v-if="item.updated_on">Updated {{ formatDate(item.updated_on) }}</span>
+					</span>
+				</span>
+				<StatusTag v-if="item.status" :status="item.status" />
+				<span v-else-if="item.restricted" class="tag flex-none bg-risk-bg text-risk">Restricted</span>
+			</component>
+			<p v-if="!shown.length" class="hint py-4">Nothing matches. Try another word or category.</p>
+		</section>
+		<p class="hint mt-3">Folders open the original in Google Drive. Opening one still depends on your Drive sharing.</p>
 	</template>
 
 	<!-- Tools we use -->
@@ -142,13 +159,15 @@
 <script setup>
 import { computed, ref } from "vue"
 import { call } from "frappe-ui"
+import { RouterLink } from "vue-router"
 import { boot } from "@/boot"
 import { loadLibrary } from "@/data"
+import { formatDate } from "@/utils/dates"
 import Avatar from "@/components/Avatar.vue"
 import Empty from "@/components/Empty.vue"
 import Icon from "@/components/Icon.vue"
-import LinkRow from "@/components/LinkRow.vue"
 import Skeleton from "@/components/Skeleton.vue"
+import StatusTag from "@/components/StatusTag.vue"
 
 const props = defineProps({ tab: { type: String, default: null } })
 
@@ -181,19 +200,38 @@ const matches = (...fields) => {
 	return !q || fields.join(" ").toLowerCase().includes(q)
 }
 
-const sops = computed(() =>
-	library.data.policies.filter(
-		(p) => ["How we work", "Culture"].includes(p.box) && !["Missing", "Archived"].includes(p.status) && matches(p.title, p.summary),
-	),
-)
-const folders = computed(() => {
-	const groups = new Map()
-	for (const r of library.data.resources) {
-		if (!matches(r.title, r.description, r.category, r.content_owner)) continue
-		if (!groups.has(r.category)) groups.set(r.category, { category: r.category, items: [] })
-		groups.get(r.category).items.push(r)
-	}
-	return [...groups.values()]
+// SOPs (How we work and Culture policies) first, then the Drive folders, one row each
+const items = computed(() => [
+	...library.data.policies
+		.filter((p) => ["How we work", "Culture"].includes(p.box) && !["Missing", "Archived"].includes(p.status))
+		.map((p) => ({
+			key: `sop:${p.name}`,
+			to: `/policies/${p.name}`,
+			title: p.title,
+			summary: p.summary,
+			category: p.box,
+			owner: p.policy_owner,
+			updated_on: p.updated_on,
+			status: p.status,
+		})),
+	...library.data.resources.map((r) => ({
+		key: `folder:${r.name}`,
+		href: r.url,
+		title: r.title,
+		summary: r.description,
+		category: r.category,
+		owner: r.content_owner,
+		restricted: r.restricted,
+	})),
+])
+const categories = computed(() => ["All", ...new Set(items.value.map((i) => i.category))])
+const category = ref("All")
+// Grouped by category, so All reads one category at a time
+const shown = computed(() => {
+	const order = categories.value
+	return items.value
+		.filter((i) => (category.value === "All" || i.category === category.value) && matches(i.title, i.summary, i.category, i.owner))
+		.sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category))
 })
 
 const helpGroups = computed(() => {
